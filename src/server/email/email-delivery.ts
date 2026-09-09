@@ -18,7 +18,7 @@ type EmailMessage = {
 export async function sendAuthOtpEmail(email: AuthOtpEmail) {
   const env = getServerEnv();
   const message = createAuthEmailMessage(email);
-
+  
   let response: Response;
 
   try {

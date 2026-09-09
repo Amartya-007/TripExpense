@@ -1,7 +1,7 @@
 {
-  "name": "Expo Auth Starter",
-  "slug": "expo-auth-starter",
-  "scheme": "expoauthstarter",
-  "iosBundleIdentifier": "com.codewithnomi.expoauth",
-  "androidPackage": "com.codewithnomi.expoauth"
+  "name": "TripExpense",
+  "slug": "trip-expense",
+  "scheme": "tripexpense",
+  "iosBundleIdentifier": "com.amartya.tripexpense",
+  "androidPackage": "com.amartya.tripexpense"
 }
