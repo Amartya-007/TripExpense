@@ -36,12 +36,23 @@ const serverEnvSchema = z
     NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
     EMAIL_FROM: senderSchema,
     RESEND_API_KEY: z.string().startsWith('re_', 'RESEND_API_KEY must be a Resend API key'),
+    SMS_PROVIDER: z.enum(['console', 'vendel']).default('console'),
+    VENDEL_URL: z.string().url('VENDEL_URL must be a valid URL').default('http://localhost:8090'),
+    VENDEL_API_KEY: z.string().optional(),
     EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID: googleClientIdSchema,
     EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID: googleClientIdSchema,
     EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID: googleClientIdSchema,
     GOOGLE_CLIENT_SECRET: z.string().min(1, 'GOOGLE_CLIENT_SECRET cannot be empty').optional(),
   })
   .superRefine((value, context) => {
+    if (value.SMS_PROVIDER === 'vendel' && (!value.VENDEL_API_KEY || value.VENDEL_API_KEY.trim().length === 0)) {
+      context.addIssue({
+        code: 'custom',
+        path: ['VENDEL_API_KEY'],
+        message: 'VENDEL_API_KEY is required when SMS_PROVIDER is vendel',
+      });
+    }
+
     const googleValues = [
       value.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID,
       value.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID,

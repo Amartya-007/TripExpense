@@ -76,7 +76,12 @@ function RootNavigator() {
           <Stack.Screen name="(auth)" />
         </Stack.Protected>
 
-        <Stack.Protected guard={phase === 'needs-onboarding' || phase === 'ready'}>
+        <Stack.Protected
+          guard={
+            phase === 'needs-phone-verification' ||
+            phase === 'needs-onboarding' ||
+            phase === 'ready'
+          }>
           <Stack.Screen name="(main)" />
         </Stack.Protected>
       </Stack>

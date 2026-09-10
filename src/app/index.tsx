@@ -1,4 +1,4 @@
-import { Redirect } from 'expo-router';
+import { type Href, Redirect } from 'expo-router';
 
 import { useAuth } from '@/features/auth/auth-provider';
 
@@ -7,8 +7,14 @@ export default function EntryPage() {
 
   if (phase === 'checking') return null;
 
-  const destination =
-    phase === 'signed-out' ? '/sign-in' : phase === 'needs-onboarding' ? '/profile' : '/dashboard';
+  const destination: Href =
+    phase === 'signed-out'
+      ? '/sign-in'
+      : phase === 'needs-phone-verification'
+        ? '/verify-phone'
+        : phase === 'needs-onboarding'
+          ? '/profile'
+          : '/dashboard';
 
   return <Redirect href={destination} />;
 }

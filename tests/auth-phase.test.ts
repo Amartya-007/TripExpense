@@ -11,11 +11,38 @@ describe('getAuthPhase', () => {
     expect(getAuthPhase(true, null)).toBe('signed-out');
   });
 
-  it('requires onboarding for an incomplete authenticated user', () => {
-    expect(getAuthPhase(true, { onboardingCompleted: false })).toBe('needs-onboarding');
+  it('requires phone verification when phone is unverified', () => {
+    expect(
+      getAuthPhase(true, {
+        phoneNumberVerified: false,
+        onboardingCompleted: false,
+      }),
+    ).toBe('needs-phone-verification');
+
+    expect(
+      getAuthPhase(true, {
+        phoneNumberVerified: null,
+        onboardingCompleted: false,
+      }),
+    ).toBe('needs-phone-verification');
   });
 
-  it('opens the completed application for an onboarded user', () => {
-    expect(getAuthPhase(true, { onboardingCompleted: true })).toBe('ready');
+  it('requires profile onboarding when phone is verified but onboarding is incomplete', () => {
+    expect(
+      getAuthPhase(true, {
+        phoneNumberVerified: true,
+        onboardingCompleted: false,
+      }),
+    ).toBe('needs-onboarding');
+  });
+
+  it('opens the completed application for an onboarded user with verified phone', () => {
+    expect(
+      getAuthPhase(true, {
+        phoneNumberVerified: true,
+        onboardingCompleted: true,
+      }),
+    ).toBe('ready');
   });
 });
+

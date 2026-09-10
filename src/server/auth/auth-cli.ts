@@ -1,6 +1,7 @@
 import { drizzleAdapter } from '@better-auth/drizzle-adapter';
 import { expo } from '@better-auth/expo';
 import { betterAuth } from 'better-auth/minimal';
+import { phoneNumber } from 'better-auth/plugins';
 import { drizzle } from 'drizzle-orm/neon-http';
 
 import { sharedAuthOptions } from '@/server/auth/auth-options';
@@ -14,5 +15,5 @@ export const auth = betterAuth({
   database: drizzleAdapter(cliDatabase, {
     provider: 'pg',
   }),
-  plugins: [expo()],
+  plugins: [expo(), phoneNumber({ sendOTP: () => {} })],
 });

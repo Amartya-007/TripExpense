@@ -1,13 +1,14 @@
 import { drizzleAdapter } from '@better-auth/drizzle-adapter';
 import { expo } from '@better-auth/expo';
 import { betterAuth } from 'better-auth/minimal';
-import { emailOTP } from 'better-auth/plugins';
+import { emailOTP, phoneNumber } from 'better-auth/plugins';
 
 import { appConfig } from '@/constants/app-config';
 import { sharedAuthOptions } from '@/server/auth/auth-options';
 import * as authSchema from '@/server/db/auth-schema';
 import { getDatabase } from '@/server/db';
 import { sendAuthOtpEmail } from '@/server/email/email-delivery';
+import { sendAuthOtpSms } from '@/server/sms/sms-service';
 import { getServerEnv } from '@/server/env';
 
 function createAuth() {
@@ -78,6 +79,14 @@ function createAuth() {
         rateLimit: { window: 60, max: 3 },
         sendVerificationOTP: async ({ email, otp, type }) => {
           await sendAuthOtpEmail({ recipient: email, code: otp, purpose: type });
+        },
+      }),
+      phoneNumber({
+        otpLength: 6,
+        expiresIn: 5 * 60,
+        allowedAttempts: 3,
+        sendOTP: async ({ phoneNumber: recipientPhone, code }) => {
+          await sendAuthOtpSms({ recipient: recipientPhone, code });
         },
       }),
     ],

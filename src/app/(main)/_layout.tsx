@@ -32,7 +32,7 @@ export default function MainLayout() {
 
   return (
     <Stack
-      initialRouteName={phase === 'needs-onboarding' ? '(onboarding)' : 'dashboard'}
+      initialRouteName={phase === 'ready' ? 'dashboard' : '(onboarding)'}
       screenOptions={{
         headerShown: true,
         headerBackButtonDisplayMode: 'minimal',
@@ -43,7 +43,7 @@ export default function MainLayout() {
         contentStyle: { backgroundColor: colors.background },
       }}
     >
-      <Stack.Protected guard={phase === 'needs-onboarding'}>
+      <Stack.Protected guard={phase === 'needs-phone-verification' || phase === 'needs-onboarding'}>
         <Stack.Screen name="(onboarding)" options={{ headerShown: false }} />
       </Stack.Protected>
 

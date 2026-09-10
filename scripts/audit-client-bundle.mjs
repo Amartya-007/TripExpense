@@ -10,6 +10,7 @@ const serverOnlyVariables = [
   'BETTER_AUTH_SECRET',
   'RESEND_API_KEY',
   'GOOGLE_CLIENT_SECRET',
+  'VENDEL_API_KEY',
 ];
 const searchableExtensions = new Set(['.html', '.js', '.json', '.map']);
 

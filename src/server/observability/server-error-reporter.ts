@@ -1,6 +1,7 @@
 export type ServerErrorReport =
   | { event: 'demo.protected-request-failed' }
   | { event: 'email.delivery-failed'; purpose: AuthEmailPurpose; providerStatus?: number }
+  | { event: 'sms.delivery-failed'; provider: string; providerStatus?: number }
   | { event: 'health.database-check-failed' }
   | { event: 'onboarding.profile-update-failed' };
 

@@ -4,6 +4,17 @@ export const authUserAdditionalFields = {
     required: false,
     input: false,
   },
+  phoneNumber: {
+    type: 'string',
+    required: false,
+    input: false,
+  },
+  phoneNumberVerified: {
+    type: 'boolean',
+    required: false,
+    defaultValue: false,
+    input: false,
+  },
   onboardingCompleted: {
     type: 'boolean',
     required: true,

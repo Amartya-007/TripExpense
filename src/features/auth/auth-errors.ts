@@ -36,3 +36,15 @@ export function getEmailOtpErrorMessage(error: AuthError) {
   if (error.status && error.status >= 500) return 'We cannot verify your email right now. Please try again.';
   return 'We could not verify that code. Request a new code and try again.';
 }
+
+export function getPhoneOtpErrorMessage(error: AuthError) {
+  if (error.status === 429) return 'Too many code requests. Please wait and try again.';
+  if (error.code === 'INVALID_OTP') return 'That code is incorrect or has already been used.';
+  if (error.code === 'OTP_EXPIRED') return 'That code has expired. Request a new code and try again.';
+  if (error.code === 'TOO_MANY_ATTEMPTS') return 'Too many incorrect codes. Request a new code and try again.';
+  if (error.code === 'INVALID_PHONE_NUMBER') return 'Please enter a valid phone number.';
+  if (error.code === 'PHONE_NUMBER_EXIST') return 'This phone number is already linked to another account.';
+  if (error.status && error.status >= 500) return 'Unable to send verification code. Please try again.';
+  return 'Unable to process phone verification. Please try again.';
+}
+

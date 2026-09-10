@@ -15,12 +15,14 @@ export const user = pgTable("user", {
   email: text("email").notNull().unique(),
   emailVerified: boolean("email_verified").default(false).notNull(),
   image: text("image"),
-  username: text("username").unique(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at")
     .defaultNow()
     .$onUpdate(() => /* @__PURE__ */ new Date())
     .notNull(),
+  phoneNumber: text("phone_number").unique(),
+  phoneNumberVerified: boolean("phone_number_verified").default(false),
+  username: text("username").unique(),
   onboardingCompleted: boolean("onboarding_completed").default(false).notNull(),
   onboardingCompletedAt: timestamp("onboarding_completed_at"),
 });
