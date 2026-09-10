@@ -65,11 +65,10 @@ describe('server environment', () => {
       ...validEnvironment,
       SMS_PROVIDER: 'vendel',
       VENDEL_API_KEY: 'test-vendel-api-key',
-      VENDEL_URL: 'http://localhost:8090',
     });
 
     expect(environment.SMS_PROVIDER).toBe('vendel');
     expect(environment.VENDEL_API_KEY).toBe('test-vendel-api-key');
-    expect(environment.VENDEL_URL).toBe('http://localhost:8090');
+    expect(environment.VENDEL_URL).toBe('https://app.vendel.cc');
   });
 });

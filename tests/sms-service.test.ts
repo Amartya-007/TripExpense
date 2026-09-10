@@ -21,7 +21,7 @@ describe('SMS Providers', () => {
 
   describe('VendelSmsProvider', () => {
     const validConfig = {
-      url: 'http://localhost:8090',
+      url: 'https://app.vendel.cc',
       apiKey: 'test-api-key',
     };
 
@@ -49,7 +49,7 @@ describe('SMS Providers', () => {
       await provider.sendOtp({ recipient: '+919876543210', code: '654321' });
 
       expect(fetchSpy).toHaveBeenCalledWith(
-        'http://localhost:8090/api/sms/send',
+        'https://app.vendel.cc/api/sms/send',
         expect.objectContaining({
           method: 'POST',
           headers: {

@@ -15,6 +15,25 @@ The shared Resend sender can normally deliver only to the account owner's addres
 
 Delivery is isolated in `src/server/email/email-delivery.ts`. To change providers, preserve `sendAuthOtpEmail`, replace the request, and update provider-specific validation in `src/server/env.ts`. The adapter must send text/HTML, time out, throw on rejection, and never log recipients or codes. Better Auth continues to own OTP generation, hashing, expiry, attempts, and verification.
 
+## Vendel (SMS Gateway)
+
+Phone-number verification during onboarding is mandatory. SMS delivery is handled by Vendel using the official hosted gateway (`https://app.vendel.cc`) with a registered Android phone acting as the physical SMS transmitter via its SIM card.
+
+Set the server-only values:
+
+```dotenv
+SMS_PROVIDER=vendel
+VENDEL_URL=https://app.vendel.cc
+VENDEL_API_KEY=vk_replace_with_your_integration_key
+```
+
+For local testing without physical SMS dispatch, set `SMS_PROVIDER=console` to log OTPs to the server console.
+
+- **Integration Key**: Use the `vk_...` key from Vendel Dashboard $\rightarrow$ Settings $\rightarrow$ API Keys. Do not use the device key (`dk_...`).
+- **Device Registration**: The Android phone runs the Vendel app and connects to the hosted service using its device key.
+- **Docker / Self-Hosting**: Running Vendel in Docker is an optional future self-hosted alternative, not required for the current architecture.
+- **Security**: `VENDEL_API_KEY` is server-only and validated by `scripts/audit-client-bundle.mjs`. It must never enter client bundles.
+
 ## Google Sign-In
 
 Finalize `iosBundleIdentifier` and `androidPackage` in `app-identity.json` first.

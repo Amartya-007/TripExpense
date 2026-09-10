@@ -1,29 +1,50 @@
 # TripExpense SMS Verification
 ## Final Architecture and Decision Document
 
-**Status:** Proposed / Architecture Baseline  
+**Status:** Implemented / Architecture Baseline  
 **Date:** 10 September 2026  
 **Project:** TripExpense  
-**Primary development SMS gateway:** Vendel, self-hosted  
-**Production SMS provider:** Not selected yet  
+**Primary SMS Gateway:** Hosted Vendel (`https://app.vendel.cc`)  
+**Physical Device / Transport:** Registered Android phone + SIM  
+**Self-Hosting (Docker):** Optional future deployment alternative (NOT required currently)  
+**Production Gateway:** Hosted Vendel / future DLT-compliant aggregator (replaceable)  
 **Authentication:** Better Auth  
-**Target market:** India
+**Target Market:** India  
 
 ---
 
 # 1. Purpose
 
-This document replaces the earlier MSG91-only implementation plan.
+This document defines the architecture and decision baseline for mandatory phone-number verification in TripExpense.
 
-The goal is to add mandatory phone-number verification to TripExpense while keeping the SMS delivery layer independent from any single provider.
+The goals are:
+- Add mandatory phone-number verification to TripExpense.
+- Keep the SMS delivery layer independent from any single provider via an adapter interface.
+- Use the official hosted Vendel gateway (`https://app.vendel.cc`) connected to a registered physical Android device with a SIM.
 
-The immediate development path is:
+The active architecture is:
 
 ```text
-TripExpense → Vendel Docker → Android phone / USB modem → SIM → SMS
+TripExpense Expo App
+       ↓
+TripExpense Backend / API
+       ↓
+Better Auth (generates & verifies OTP)
+       ↓
+SmsService (internal dispatcher)
+       ↓
+VendelSmsProvider (adapter)
+       ↓ HTTPS (X-API-Key)
+Hosted Vendel Service (https://app.vendel.cc)
+       ↓ Push / WebSocket
+Registered Android Phone
+       ↓ Cellular Network
+Physical SIM
+       ↓ GSM / LTE SMS
+User's Phone
 ```
 
-A production provider such as MSG91 may be added later, but TripExpense must not depend directly on MSG91.
+Docker is **not** a required component of this architecture. Self-hosting Vendel with Docker is documented solely as an optional future infrastructure choice.
 
 ---
 
@@ -31,7 +52,7 @@ A production provider such as MSG91 may be added later, but TripExpense must not
 
 ## Decision 1: Phone verification is mandatory
 
-After email verification, a signed-in user who has not verified a phone number must complete phone verification before completing onboarding.
+After email verification, a signed-in user who has not verified a phone number must complete phone verification before proceeding to username/profile setup and app-lock onboarding.
 
 The resulting flow is:
 
@@ -40,7 +61,7 @@ Email signup
     ↓
 Email verification
     ↓
-Phone verification
+Phone verification (mandatory, no skip)
     ↓
 Username / profile / app lock
     ↓
@@ -53,915 +74,286 @@ There is no skip option for phone verification.
 
 ## Decision 2: Better Auth remains responsible for OTP state
 
-Better Auth's phone-number functionality is the authentication layer.
+Better Auth's `phoneNumber` plugin is the sole authentication authority.
 
-It should handle:
-
-- OTP generation
-- OTP storage
-- OTP expiration
+It handles:
+- OTP generation (6 digits)
+- OTP storage & hashing
+- OTP expiration (300 seconds)
 - OTP verification
-- phone-number verification state
+- Phone-number verification state (`phoneNumberVerified`)
 
-The SMS system is responsible only for delivering the generated OTP.
-
-This separation is important because changing the SMS provider must not require rewriting authentication logic.
+The SMS system is responsible **only** for delivering the generated OTP code. The SMS provider never generates or validates OTPs.
 
 ---
 
-## Decision 3: Do not couple TripExpense directly to MSG91
+## Decision 3: Decoupled SMS provider architecture
 
-The previous plan called MSG91 directly from TripExpense.
+TripExpense is not coupled directly to any single SMS provider.
 
-That is no longer the architecture.
-
-Instead:
+The architecture uses a clean dependency inversion:
 
 ```text
 Better Auth
     ↓
-TripExpense SMS service
+SmsService
     ↓
-SMS provider adapter
+SmsProvider (TypeScript interface)
     ↓
-Vendel / future provider
+VendelSmsProvider (current adapter)
+    ↓
+Hosted Vendel (https://app.vendel.cc)
 ```
 
-TripExpense should expose one internal operation conceptually equivalent to:
+TripExpense exposes an internal operation:
 
-```text
-sendOtp(phoneNumber, otp)
+```ts
+export interface SendOtpParams {
+  recipient: string; // E.164 format (e.g. +919876543210)
+  code: string;      // 6-digit OTP code
+}
+
+export interface SmsProvider {
+  readonly name: string;
+  sendOtp(params: SendOtpParams): Promise<void>;
+}
 ```
 
-The implementation behind it can change.
+Future providers (e.g., MSG91 or another telecom aggregator) can implement `SmsProvider` without changing any authentication or onboarding code.
 
 ---
 
-## Decision 4: Vendel is the first SMS implementation
+## Decision 4: Hosted Vendel is the active SMS gateway
 
-Vendel is being self-hosted with Docker.
-
-Current local Vendel endpoint:
+Vendel is utilized via the official hosted service:
 
 ```text
-http://localhost:8090
+https://app.vendel.cc
 ```
 
-Vendel exposes:
+The TripExpense backend sends SMS dispatch requests over HTTPS to:
 
 ```text
 POST /api/sms/send
 ```
 
-The TripExpense backend will authenticate to Vendel using an integration API key in:
+Authenticated via the server-side integration API key:
 
-```text
-X-API-Key
+```http
+X-API-Key: <VENDEL_API_KEY>
 ```
 
-The Vendel API request is conceptually:
+Request payload:
 
 ```json
 {
   "recipients": ["+919876543210"],
-  "body": "Your TripExpense verification code is 123456"
+  "body": "Your TripExpense verification code is 123456. This code expires in 5 minutes."
 }
 ```
 
-The Vendel key must remain server-side.
-
-The Expo client must never receive it.
+The integration key remains strictly server-side. The Expo client never receives it.
 
 ---
 
-# 3. Vendel Responsibility
+# 3. Gateway & Physical Device Model
 
-Vendel is the SMS gateway/device-management layer.
+## Gateway Responsibility
 
-Vendel is responsible for:
+Vendel provides the cloud gateway and device-management layer:
+- Accepts authenticated SMS requests via API
+- Queues messages and dispatches them to active registered devices
+- Tracks delivery status (`pending`, `assigned`, `sending`, `sent`, `delivered`, `failed`)
 
-- accepting SMS requests
-- queueing/processing SMS
-- communicating with the connected device
-- sending through the Android phone or modem
-- reporting SMS status
+Vendel does **not** manage:
+- TripExpense users or passwords
+- OTP generation or verification
+- Onboarding state
+- Application authorization
 
-Vendel is NOT responsible for:
+## Physical Device Model
 
-- TripExpense users
-- Better Auth
-- OTP generation
-- OTP verification
-- onboarding state
-- TripExpense authorization
-
----
-
-# 4. Hardware Model
-
-Docker alone cannot send a cellular SMS.
-
-The complete development setup requires a physical SMS-capable device.
-
-Possible transport:
-
-```text
-Vendel Docker
-      ↓
-Android phone + SIM
-```
-
-or:
-
-```text
-Vendel Docker
-      ↓
-USB LTE/4G/5G modem + SIM
-```
-
-The Android-phone route is the preferred initial development path because it is easier to test.
+The actual cellular SMS is transmitted by a physical Android phone:
+1. The Android phone is registered with the Vendel hosted service using the Vendel Android app and a device key (`dk_...`).
+2. The phone contains a working SIM card with an active cellular SMS plan.
+3. When TripExpense calls `POST https://app.vendel.cc/api/sms/send`, Vendel relays the dispatch command to the registered Android phone.
+4. The Android phone sends the cellular SMS through its SIM card.
 
 ---
 
-# 5. DLT / Indian SMS Compliance Decision
+# 4. Optional Future Deployment: Docker / Self-Hosting
 
-DLT is an Indian telecom compliance concern and must be considered separately from Vendel.
+Vendel can also be self-hosted using Docker (`ghcr.io/jimscope/vendel:latest`).
 
-We do NOT treat Vendel as a DLT bypass.
-
-We also do NOT assume that a personal SIM is automatically suitable for production application OTP traffic.
-
-Therefore:
-
-### Development
-
-Use Vendel + personal/test device for controlled development and technical testing.
-
-### Production
-
-Select a production SMS route after confirming the applicable Indian telecom requirements.
-
-Possible provider:
-
-```text
-MSG91
-```
-
-or another compliant SMS provider.
-
-The production provider is deliberately left open.
+If self-hosted in the future:
+- The container serves port `8090`.
+- The URL is configured via `VENDEL_URL` (e.g., `http://localhost:8090` or a private domain).
+- **Docker is NOT required for the current architecture**, as the hosted service (`https://app.vendel.cc`) is fully functional and eliminates local container management overhead.
 
 ---
 
-# 6. Why We Are Not Making MSG91 the Foundation
+# 5. DLT / Indian SMS Compliance
 
-The previous design assumed:
+DLT (Distributed Ledger Technology) is a regulatory requirement for commercial SMS headers/templates in India.
 
-```text
-TripExpense → MSG91
-```
-
-This created a direct dependency on:
-
-- MSG91 account setup
-- MSG91 credentials
-- MSG91 OTP template
-- provider-specific API behavior
-- Indian DLT/provider onboarding requirements
-
-The new design avoids this coupling.
-
-Instead:
-
-```text
-TripExpense
-    ↓
-SMS abstraction
-    ↓
-Vendel today
-    ↓
-Production provider later
-```
-
-This means the authentication system does not need to change if the SMS provider changes.
+- **Development / Initial Testing:** Uses hosted Vendel + registered personal Android device and SIM for controlled technical testing.
+- **Production Scale:** When scaling commercial traffic, an enterprise DLT-registered aggregator (or compliant carrier route) can be introduced by creating a new `SmsProvider` adapter without modifying Better Auth or onboarding code.
 
 ---
 
-# 7. Final Architecture
+# 6. Final Architecture Diagram
 
 ```text
                          ┌──────────────────────┐
                          │      TripExpense      │
                          │                      │
                          │ Expo Client          │
-                         │ Better Auth          │
-                         │ Onboarding           │
+                         │ (No Vendel Secrets)  │
                          └──────────┬───────────┘
                                     │
-                                    │
-                             HTTPS / API
+                             HTTPS (API/Session)
                                     │
                                     ▼
                          ┌──────────────────────┐
                          │  TripExpense Backend │
                          │                      │
-                         │ Auth / OTP           │
-                         │ SMS Service          │
-                         │ Provider Adapter     │
+                         │ Better Auth          │
+                         │ SmsService           │
+                         │ VendelSmsProvider    │
                          └──────────┬───────────┘
                                     │
-                             X-API-Key
+                             HTTPS (X-API-Key)
                                     │
                                     ▼
                          ┌──────────────────────┐
-                         │   Vendel Docker      │
+                         │  Hosted Vendel Cloud │
+                         │ (https://app.vendel.cc)│
                          │                      │
-                         │ SMS API              │
-                         │ Message Queue         │
-                         │ Device Management     │
+                         │ Device Dispatcher    │
+                         │ Message Queue        │
                          └──────────┬───────────┘
+                                    │
+                             Push / Sync
                                     │
                                     ▼
                          ┌──────────────────────┐
-                         │ Android Phone / Modem│
-                         │ + Indian SIM         │
+                         │ Registered Android   │
+                         │ Phone with Active SIM│
                          └──────────┬───────────┘
                                     │
-                                    ▼
-                              Indian SMS Network
+                             Cellular Network
                                     │
                                     ▼
-                              User's Phone
+                         ┌──────────────────────┐
+                         │     User's Phone     │
+                         │    (Receives SMS)    │
+                         └──────────────────────┘
 ```
 
 ---
 
-# 8. Docker Networking
+# 7. SMS API Contract & Error Handling
 
-There are two possible development configurations.
-
-## Configuration A: TripExpense backend runs directly on Windows
-
-Vendel:
+Vendel Send Endpoint:
 
 ```text
-http://localhost:8090
+POST https://app.vendel.cc/api/sms/send
 ```
 
-TripExpense backend can call:
+Headers:
 
-```text
-http://localhost:8090/api/sms/send
+```http
+Content-Type: application/json
+X-API-Key: <VENDEL_API_KEY>
 ```
 
-## Configuration B: TripExpense backend also runs in Docker
-
-Do NOT use:
-
-```text
-http://localhost:8090
-```
-
-from inside the TripExpense container.
-
-Instead, both services should share a Docker network and TripExpense should call Vendel through its Compose service name.
-
-Example:
-
-```text
-http://vendel:8090
-```
-
-The exact service name will be determined from the final TripExpense Docker Compose configuration.
-
----
-
-# 9. SMS API Contract
-
-Vendel's send endpoint:
-
-```text
-POST /api/sms/send
-```
-
-Authentication:
-
-```text
-X-API-Key: <Vendel integration API key>
-```
-
-Request:
-
-```json
-{
-  "recipients": [
-    "+919876543210"
-  ],
-  "body": "Your TripExpense verification code is 123456"
-}
-```
-
-Optional fields supported by Vendel include:
+Payload:
 
 ```json
 {
   "recipients": ["+919876543210"],
-  "body": "Your TripExpense verification code is 123456",
-  "device_id": "",
-  "group_ids": []
+  "body": "Your TripExpense verification code is 123456. This code expires in 5 minutes."
 }
 ```
 
-Expected accepted response:
+Expected Response (200 OK):
 
 ```json
 {
-  "batch_id": "...",
-  "message_ids": ["..."],
+  "batch_id": "",
+  "message_ids": ["a1b2c3d4e5f6g7h"],
   "recipients_count": 1,
   "status": "accepted"
 }
 ```
 
-Phone numbers should use E.164 format.
+### Error Responses & Strict Failure Handling
 
-Example:
+Vendel returns JSON errors on failures:
+- `400 Bad Request`: `{ "error": "invalid_phone_number", "message": "Phone number must be in E.164 format" }`
+- `401 Unauthorized`: `{ "error": "unauthorized", "message": "Authentication required" }`
+- `402 Payment Required`: `{ "error": "quota_exceeded", "message": "Monthly message quota exceeded" }`
+- `503 Service Unavailable`: `{ "error": "no_devices", "message": "No devices available to send messages" }`
 
-```text
-+919876543210
-```
-
----
-
-# 10. API Key Security
-
-There are two different Vendel API-key concepts.
-
-## Integration API key
-
-Used by TripExpense backend.
-
-```text
-TripExpense backend
-        ↓
-   X-API-Key
-        ↓
-      Vendel
-```
-
-## Device API key
-
-Used by the Android/modem device to communicate with Vendel.
-
-TripExpense must NOT use the device key.
-
-Neither API key should ever be exposed to the Expo client.
+**Strict Handling Policy:**
+- `VendelSmsProvider` throws `SmsDeliveryError` on non-2xx responses or network failure.
+- Operational events are logged via `reportServerError({ event: 'sms.delivery-failed', provider: 'vendel' })`.
+- **No silent fallback**: The system never logs fallback OTPs or reports success when Vendel fails. The UI receives a clear, retryable error message.
 
 ---
 
-# 11. OTP Flow
+# 8. API Key Security
 
-```text
-1. User signs up with email/password.
+Vendel uses two distinct key types:
 
-2. User verifies email.
+1. **Integration API Key (`vk_...`)**:
+   - Generated from Vendel Dashboard $\rightarrow$ Settings $\rightarrow$ API Keys.
+   - Used **only** by the TripExpense backend via `X-API-Key`.
+   - Never exposed to the Expo client or client-side bundles.
+   - Monitored by `audit-client-bundle.mjs`.
 
-3. Better Auth session is restored.
-
-4. Auth phase checks phoneNumberVerified.
-
-5. If false:
-       route to phone verification.
-
-6. User enters phone number.
-
-7. Better Auth generates OTP.
-
-8. Better Auth calls the configured sendOTP function.
-
-9. TripExpense SMS service receives:
-       recipient
-       OTP code
-
-10. SMS service calls Vendel.
-
-11. Vendel sends SMS through the connected device.
-
-12. User enters OTP.
-
-13. Better Auth verifies OTP.
-
-14. phoneNumberVerified becomes true.
-
-15. User proceeds to normal onboarding.
-
-16. User completes onboarding.
-
-17. User reaches dashboard.
-```
+2. **Device Key (`dk_...`)**:
+   - Generated when registering the Android device.
+   - Used **only** by the Vendel app on the Android phone.
+   - TripExpense backend does **not** use the device key.
 
 ---
 
-# 12. Authentication State Machine
+# 9. Phone Number Contract (E.164)
 
-The previous onboarding flow becomes:
-
-```text
-SIGNED OUT
-    │
-    ▼
-EMAIL SIGNUP
-    │
-    ▼
-EMAIL VERIFICATION
-    │
-    ▼
-SIGNED IN
-    │
-    ├── phoneNumberVerified = false
-    │          │
-    │          ▼
-    │     PHONE VERIFICATION
-    │          │
-    │          ▼
-    │     phoneNumberVerified = true
-    │
-    ▼
-ONBOARDING
-    │
-    ▼
-DASHBOARD
-```
-
-Auth phase should contain:
+The provider interface and adapter strictly enforce E.164 format:
 
 ```text
-needs-phone-verification
++[country_code][number] (e.g. +919876543210)
 ```
 
-Expected phase logic:
-
-```text
-User does not exist
-    → signed-out/auth routes
-
-User exists + email not verified
-    → email verification
-
-User exists + phone not verified
-    → phone verification
-
-User exists + phone verified + onboarding incomplete
-    → existing onboarding
-
-User exists + onboarding complete
-    → dashboard
-```
+The SMS adapter is country-neutral and does not hardcode `+91`. The `+91` prefix is purely a default UI convenience for users in the mobile screen.
 
 ---
 
-# 13. Database Changes
+# 10. Environment Configuration
 
-Better Auth's phone-number functionality requires user phone fields.
-
-Expected fields:
-
-```text
-phone_number
-phone_number_verified
-```
-
-The exact schema must follow the Better Auth version already installed in TripExpense.
-
-After schema changes:
-
-```text
-npm run db:generate
-npm run db:migrate
-```
-
-These commands must be verified against the actual TripExpense package scripts before execution.
-
----
-
-# 14. Environment Configuration
-
-TripExpense should have provider-neutral variables.
-
-Recommended:
-
-```text
+```dotenv
+# Server-only SMS delivery for mandatory phone verification.
 SMS_PROVIDER=vendel
-VENDEL_URL=http://localhost:8090
-VENDEL_API_KEY=<server-only-key>
+VENDEL_URL=https://app.vendel.cc
+VENDEL_API_KEY=vk_your_server_only_key
 ```
 
-If TripExpense backend and Vendel are both Docker services:
+For local development without physical SMS dispatch:
 
-```text
-VENDEL_URL=http://vendel:8090
+```dotenv
+SMS_PROVIDER=console
 ```
 
-The final production provider can introduce its own variables later.
-
-Example:
-
-```text
-SMS_PROVIDER=msg91
-```
-
-without changing the authentication flow.
-
-Do not commit real credentials.
+In `console` mode, OTP codes are logged explicitly to the server console.
 
 ---
 
-# 15. Recommended Internal Structure
-
-The exact paths must be checked against the current TripExpense repository before implementation.
-
-Conceptually:
-
-```text
-server/
-├── auth/
-│   └── auth-server
-│
-└── sms/
-    ├── sms-service
-    └── providers/
-        ├── vendel
-        └── future-provider
-```
-
-The important rule is:
-
-```text
-Better Auth
-     ↓
-SMS service
-     ↓
-Provider interface
-     ↓
-Vendel provider
-```
-
-Not:
-
-```text
-Better Auth
-     ↓
-MSG91-specific code
-```
-
----
-
-# 16. SMS Message
-
-The initial development message can be:
-
-```text
-Your TripExpense verification code is 123456.
-```
-
-The final production message must follow the requirements of the selected production SMS route and applicable Indian telecom/DLT rules.
-
-Therefore, the production template is intentionally NOT frozen yet.
-
----
-
-# 17. Error Handling
-
-The SMS service should distinguish between:
-
-### Provider unavailable
-
-Vendel cannot be reached.
-
-Result:
-
-```text
-OTP send failed
-```
-
-The user should be allowed to retry.
-
-### Provider rejected request
-
-Vendel rejects the request.
-
-Result:
-
-```text
-OTP send failed
-```
-
-Log the provider error server-side.
-
-### SMS accepted
-
-Vendel returns:
-
-```text
-status: accepted
-```
-
-TripExpense treats the send operation as accepted.
-
-### OTP expired
-
-Better Auth handles OTP expiration.
-
-The SMS provider does not determine OTP validity.
-
-### Wrong OTP
-
-Better Auth handles verification failure.
-
-The SMS provider is not involved.
-
----
-
-# 18. Retry Policy
-
-Do not blindly resend SMS every time the user presses the button.
-
-The phone verification UI should have:
-
-- resend cooldown
-- clear error state
-- OTP expiration
-- controlled retries
-
-The existing OTP cooldown mechanism in TripExpense should be reused where appropriate.
-
----
-
-# 19. Development Testing
-
-## Stage 1: Test Vendel independently
-
-Before changing TripExpense:
-
-```text
-PowerShell
-   ↓
-Vendel API
-   ↓
-Android phone/modem
-   ↓
-test SMS
-```
-
-This proves the SMS infrastructure works.
-
-## Stage 2: Test TripExpense → Vendel
-
-```text
-TripExpense backend
-       ↓
-Vendel API
-       ↓
-test SMS
-```
-
-This proves Docker/network/API authentication.
-
-## Stage 3: Test complete authentication
-
-```text
-Signup
- ↓
-Email verification
- ↓
-Phone number
- ↓
-OTP SMS
- ↓
-OTP verification
- ↓
-Onboarding
- ↓
-Dashboard
-```
-
----
-
-# 20. Manual Acceptance Test
-
-A new user should be able to:
-
-1. Create an account.
-2. Verify email.
-3. Reach phone verification.
-4. Enter an Indian phone number.
-5. Receive an SMS.
-6. Enter the OTP.
-7. Successfully verify the phone.
-8. Continue to username/profile onboarding.
-9. Complete onboarding.
-10. Reach the dashboard.
-11. Sign out.
-12. Sign back in.
-13. Go directly to the dashboard if onboarding is already complete.
-
----
-
-# 21. Security Requirements
-
-Never expose:
-
-```text
-VENDEL_API_KEY
-```
-
-to the Expo application.
-
-Never put the Vendel API key in client-side code.
-
-Never store the OTP in the client application beyond what the authentication flow requires.
-
-OTP verification must remain server/auth-system controlled.
-
-Use HTTPS for production backend communication.
-
-Keep Vendel accessible only to the systems that need it.
-
----
-
-# 22. Production Considerations
-
-Vendel is the development/self-hosted SMS gateway in this architecture.
-
-Before production launch, verify:
-
-- Indian telecom requirements
-- DLT requirements
-- sender/header requirements
-- message-template requirements
-- SIM/operator terms
-- expected SMS volume
-- delivery reliability
-- rate limits
-- device availability
-- monitoring
-- failure handling
-
-Do not assume the development phone/SIM setup is automatically a production-compliant commercial SMS system.
-
----
-
-# 23. Why This Architecture Is Better
-
-The original plan was:
-
-```text
-TripExpense
-     ↓
-MSG91
-```
-
-The final architecture is:
-
-```text
-TripExpense
-     ↓
-SMS abstraction
-     ↓
-Vendel today
-     ↓
-Production provider later
-```
-
-Benefits:
-
-- No MSG91 dependency during development.
-- No provider credentials in the client.
-- Better Auth remains the authentication authority.
-- Vendel can be tested locally.
-- Production provider can change later.
-- DLT/provider decisions remain outside the authentication core.
-- SMS infrastructure can evolve independently.
-
----
-
-# 24. Current Project Status
-
-## Completed / Decided
-
-- Phone verification is mandatory.
-- Better Auth remains responsible for OTP generation and verification.
-- MSG91 is no longer the foundational SMS implementation.
-- Vendel has been selected as the development SMS gateway.
-- Vendel is running through Docker.
-- Vendel API is exposed on port 8090.
-- Vendel's SMS send endpoint has been identified.
-- Integration API key authentication has been identified.
-- Android phone/modem is required for actual cellular SMS.
-- Provider abstraction is required.
-- DLT is treated as a production/compliance concern, not as a Vendel feature.
-
-## Not yet implemented
-
-- TripExpense code changes.
-- Better Auth phone plugin integration.
-- TripExpense database migration.
-- SMS provider abstraction.
-- Vendel provider adapter.
-- TripExpense → Vendel Docker networking.
-- Android/modem registration and final SMS test.
-- Production SMS provider selection.
-
----
-
-# 25. Implementation Order
-
-Do the work in this order.
-
-```text
-STEP 1
-Verify Vendel independently
-        ↓
-STEP 2
-Connect Android phone/modem to Vendel
-        ↓
-STEP 3
-Send a manual test SMS through Vendel
-        ↓
-STEP 4
-Inspect TripExpense Docker/backend setup
-        ↓
-STEP 5
-Connect TripExpense backend to Vendel
-        ↓
-STEP 6
-Create SMS provider abstraction
-        ↓
-STEP 7
-Integrate Better Auth phone verification
-        ↓
-STEP 8
-Add database migration
-        ↓
-STEP 9
-Add phone-verification onboarding route
-        ↓
-STEP 10
-Update auth-phase routing
-        ↓
-STEP 11
-Run complete authentication test
-        ↓
-STEP 12
-Document production SMS/DLT decision
-```
-
----
-
-# 26. Final Target
-
-The final development system should behave like this:
-
-```text
-                    USER
-                     │
-                     ▼
-              TripExpense App
-                     │
-                     ▼
-              TripExpense API
-                     │
-                     ▼
-              Better Auth
-                     │
-               generates OTP
-                     │
-                     ▼
-              SMS Service
-                     │
-                     ▼
-             Vendel Adapter
-                     │
-               X-API-Key
-                     │
-                     ▼
-              Vendel Docker
-                     │
-                     ▼
-           Android Phone / Modem
-                     │
-                     ▼
-                  SIM
-                     │
-                     ▼
-                  SMS
-                     │
-                     ▼
-                  USER
-```
-
-The key architectural principle is:
-
-> **TripExpense owns authentication. Vendel owns SMS delivery. The SMS provider is replaceable.**
-
-This is the baseline to use before implementation begins.
+# 11. Security Checklist
+
+- [x] `VENDEL_API_KEY` exists exclusively in server-side runtime environment.
+- [x] `VENDEL_API_KEY` is never prefixed with `EXPO_PUBLIC_`.
+- [x] `audit-client-bundle.mjs` checks `VENDEL_API_KEY` against client bundles.
+- [x] Client code only communicates with TripExpense backend routes.
+- [x] OTP verification remains exclusively server-side via Better Auth.

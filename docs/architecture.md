@@ -80,7 +80,8 @@ Current server modules:
 ```text
 server/auth            Better Auth runtime/options/schema CLI
 server/db              database connection and auth schema
-server/email           replaceable OTP delivery
+server/email           replaceable email OTP delivery
+server/sms             replaceable SMS OTP delivery (hosted Vendel gateway)
 server/demo            public/private API examples
 server/onboarding      authenticated profile update
 server/health          readiness probe

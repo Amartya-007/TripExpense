@@ -4,13 +4,15 @@ Production uses the same auth flow as development. Only origins, secrets, signin
 
 ## Environment and secrets
 
-Server-only values: `DATABASE_URL`, `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`, `EMAIL_FROM`, `RESEND_API_KEY`, optional `AUTH_TRUSTED_ORIGINS`, and `GOOGLE_CLIENT_SECRET`.
+Server-only values: `DATABASE_URL`, `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`, `EMAIL_FROM`, `RESEND_API_KEY`, optional `AUTH_TRUSTED_ORIGINS`, `GOOGLE_CLIENT_SECRET`, `SMS_PROVIDER`, `VENDEL_URL`, and `VENDEL_API_KEY` (required when `SMS_PROVIDER=vendel`).
 
 Client build values: `EXPO_PUBLIC_APP_ENV`, `EXPO_PUBLIC_API_URL`, and optional public Google client IDs. `APPLE_TEAM_ID` is optional signing metadata for the local/EAS build environment.
 
-- Use HTTPS for deployed API/auth origins and exact additional browser origins.
+- Use HTTPS for deployed API/auth origins, Vendel API (`https://app.vendel.cc`), and exact additional browser origins.
 - Store secrets in the deployment secret manager, never in the Expo bundle.
-- Do not add `EXPO_PUBLIC_` to database, auth, email, or provider secrets.
+- Do not add `EXPO_PUBLIC_` to database, auth, email, SMS, or provider secrets.
+- `VENDEL_API_KEY` is strictly server-only. The client never communicates with Vendel directly.
+- The physical SMS gateway is a registered Android phone with a SIM connected to hosted Vendel (`https://app.vendel.cc`). Docker self-hosting is an optional future alternative and is not required.
 - Do not use broad wildcard browser origins.
 
 ## Sessions and recovery

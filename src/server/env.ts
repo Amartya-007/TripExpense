@@ -37,7 +37,7 @@ const serverEnvSchema = z
     EMAIL_FROM: senderSchema,
     RESEND_API_KEY: z.string().startsWith('re_', 'RESEND_API_KEY must be a Resend API key'),
     SMS_PROVIDER: z.enum(['console', 'vendel']).default('console'),
-    VENDEL_URL: z.string().url('VENDEL_URL must be a valid URL').default('http://localhost:8090'),
+    VENDEL_URL: z.string().url('VENDEL_URL must be a valid URL').default('https://app.vendel.cc'),
     VENDEL_API_KEY: z.string().optional(),
     EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID: googleClientIdSchema,
     EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID: googleClientIdSchema,
