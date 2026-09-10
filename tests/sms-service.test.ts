@@ -58,7 +58,7 @@ describe('SMS Providers', () => {
           },
           body: JSON.stringify({
             recipients: ['+919876543210'],
-            body: 'Your TripExpense verification code is 654321. This code expires in 5 minutes.',
+            body: 'TripExpense: 654321',
           }),
         }),
       );

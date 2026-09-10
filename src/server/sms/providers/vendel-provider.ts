@@ -29,7 +29,7 @@ export class VendelSmsProvider implements SmsProvider {
       throw new SmsDeliveryError('vendel', 'Invalid recipient phone number format. Must be E.164.');
     }
 
-    const message = `Your TripExpense verification code is ${code}. This code expires in 5 minutes.`;
+    const message = `TripExpense: ${code}`;
 
     const payload: {
       recipients: string[];

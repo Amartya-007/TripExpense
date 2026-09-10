@@ -56,8 +56,10 @@ export default function VerifyPhoneScreen() {
       });
 
       if (result.error) {
+        const errorMsg = getPhoneOtpErrorMessage(result.error);
+        phoneForm.setError('phoneNumber', { message: errorMsg });
         appToast.error('Failed to send code', {
-          description: getPhoneOtpErrorMessage(result.error),
+          description: errorMsg,
         });
         return;
       }
@@ -70,6 +72,7 @@ export default function VerifyPhoneScreen() {
         description: `SMS sent to ${formattedPhone}`,
       });
     } catch {
+      phoneForm.setError('phoneNumber', { message: 'Unable to send verification code.' });
       appToast.error('Failed to send code', {
         description: 'Unable to send verification code. Please check your connection and try again.',
       });
@@ -89,8 +92,10 @@ export default function VerifyPhoneScreen() {
       });
 
       if (result.error) {
+        const errorMsg = getPhoneOtpErrorMessage(result.error);
+        otpForm.setError('otp', { message: errorMsg });
         appToast.error('Verification failed', {
-          description: getPhoneOtpErrorMessage(result.error),
+          description: errorMsg,
         });
         return;
       }
@@ -98,6 +103,7 @@ export default function VerifyPhoneScreen() {
       await refreshSession();
       appToast.success('Phone number verified');
     } catch {
+      otpForm.setError('otp', { message: 'Check your connection and try again.' });
       appToast.error('Verification failed', {
         description: 'Check your connection and try again.',
       });
@@ -192,11 +198,12 @@ export default function VerifyPhoneScreen() {
             <Controller
               control={otpForm.control}
               name="otp"
-              render={({ field: { onBlur, onChange, value } }) => (
+              render={({ field: { onBlur, onChange, value }, fieldState }) => (
                 <OtpCodeInput
                   value={value}
                   onBlur={onBlur}
                   onChange={onChange}
+                  error={fieldState.error?.message}
                   label="SMS Verification Code"
                 />
               )}
