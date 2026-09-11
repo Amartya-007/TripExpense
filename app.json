@@ -1,14 +1,19 @@
 {
   "expo": {
+    "name": "TripExpense",
+    "slug": "trip-expense",
+    "scheme": "tripexpense",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "userInterfaceStyle": "automatic",
     "ios": {
+      "bundleIdentifier": "com.amartya.tripexpense",
       "icon": "./assets/expo.icon",
       "usesAppleSignIn": true
     },
     "android": {
+      "package": "com.amartya.tripexpense",
       "adaptiveIcon": {
         "backgroundColor": "#F3F4F6",
         "foregroundImage": "./assets/images/android-icon-foreground.png",

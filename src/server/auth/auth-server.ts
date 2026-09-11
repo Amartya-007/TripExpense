@@ -2,7 +2,7 @@ import { drizzleAdapter } from '@better-auth/drizzle-adapter';
 import { expo } from '@better-auth/expo';
 import { betterAuth } from 'better-auth/minimal';
 import { emailOTP, phoneNumber } from 'better-auth/plugins';
-
+import { dash } from '@better-auth/infra';
 import { appConfig } from '@/constants/app-config';
 import { sharedAuthOptions } from '@/server/auth/auth-options';
 import * as authSchema from '@/server/db/auth-schema';
@@ -15,9 +15,9 @@ function createAuth() {
   const env = getServerEnv();
   const googleConfigured = Boolean(
     env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID &&
-      env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID &&
-      env.EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID &&
-      env.GOOGLE_CLIENT_SECRET,
+    env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID &&
+    env.EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID &&
+    env.GOOGLE_CLIENT_SECRET,
   );
 
   return betterAuth({
@@ -47,15 +47,15 @@ function createAuth() {
       },
       ...(googleConfigured
         ? {
-            google: {
-              clientId: [
-                env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID!,
-                env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID!,
-                env.EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID!,
-              ],
-              clientSecret: env.GOOGLE_CLIENT_SECRET!,
-            },
-          }
+          google: {
+            clientId: [
+              env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID!,
+              env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID!,
+              env.EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID!,
+            ],
+            clientSecret: env.GOOGLE_CLIENT_SECRET!,
+          },
+        }
         : {}),
     },
     trustedOrigins: Array.from(
@@ -69,6 +69,7 @@ function createAuth() {
       ]),
     ),
     plugins: [
+      dash(),
       expo(),
       emailOTP({
         overrideDefaultEmailVerification: true,
