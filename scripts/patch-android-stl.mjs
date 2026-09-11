@@ -26,6 +26,16 @@ const replacements = [
     find: 'target_link_libraries(worklets android log ReactAndroid::reactnative',
     replace: 'target_link_libraries(worklets c++_shared android log ReactAndroid::reactnative',
   },
+  {
+    file: path.join('node_modules', 'react-native-nitro-modules', 'android', 'build.gradle'),
+    find: `  sourceSets {
+    main {
+      if (isNewArchitectureEnabled()) {`,
+    replace: `  sourceSets {
+    main {
+      kotlin.srcDirs += ["src/main/java", "src/main/kotlin"]
+      if (isNewArchitectureEnabled()) {`,
+  },
 ];
 
 let changed = 0;
