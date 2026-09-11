@@ -53,6 +53,7 @@
     "auth": "1.6.23",
     "dotenv": "^17.4.2",
     "drizzle-kit": "^0.31.10",
+    "esbuild": "^0.28.2",
     "eslint": "^9.39.4",
     "eslint-config-expo": "~57.0.2",
     "typescript": "~6.0.3",
