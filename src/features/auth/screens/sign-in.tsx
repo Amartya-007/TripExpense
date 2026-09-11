@@ -1,10 +1,12 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Link, router } from "expo-router";
+import { useState } from "react";
 import { Pressable, View } from "react-native";
 import { Controller, useForm } from "react-hook-form";
 
 import { AppText } from "@/components/ui/app-text";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Screen } from "@/components/ui/screen";
 import {
@@ -25,6 +27,7 @@ import { useAppTheme } from "@/theme/theme-provider";
 export default function SignInScreen() {
   const { refreshSession } = useAuth();
   const { spacing } = useAppTheme();
+  const [rememberMe, setRememberMe] = useState(true);
   const {
     control,
     handleSubmit,
@@ -40,6 +43,7 @@ export default function SignInScreen() {
       const result = await authClient.signIn.email({
         email: values.email.trim().toLowerCase(),
         password: values.password,
+        rememberMe,
       });
 
       if (result.error) {
@@ -129,20 +133,32 @@ export default function SignInScreen() {
             />
           )}
         />
-        <Link href="/forgot-password" asChild>
-          <Pressable
-            accessibilityRole="button"
-            style={{
-              alignSelf: "flex-end",
-              paddingHorizontal: spacing.xs,
-              paddingVertical: spacing.xs,
-            }}
-          >
-            <AppText variant="caption" tone="primary">
-              Forgot password?
-            </AppText>
-          </Pressable>
-        </Link>
+        <View
+          style={{
+            flexDirection: "row",
+            alignItems: "center",
+            justifyContent: "space-between",
+          }}
+        >
+          <Checkbox
+            checked={rememberMe}
+            onChange={setRememberMe}
+            label="Remember me"
+          />
+          <Link href="/forgot-password" asChild>
+            <Pressable
+              accessibilityRole="button"
+              style={{
+                paddingHorizontal: spacing.xs,
+                paddingVertical: spacing.xs,
+              }}
+            >
+              <AppText variant="caption" tone="primary">
+                Forgot password?
+              </AppText>
+            </Pressable>
+          </Link>
+        </View>
         <Button
           label="Sign in"
           loading={isSubmitting}

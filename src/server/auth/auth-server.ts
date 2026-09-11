@@ -2,7 +2,7 @@ import { drizzleAdapter } from '@better-auth/drizzle-adapter';
 import { expo } from '@better-auth/expo';
 import { betterAuth } from 'better-auth/minimal';
 import { emailOTP, phoneNumber } from 'better-auth/plugins';
-import { dash } from '@better-auth/infra';
+
 import { appConfig } from '@/constants/app-config';
 import { sharedAuthOptions } from '@/server/auth/auth-options';
 import * as authSchema from '@/server/db/auth-schema';
@@ -69,7 +69,6 @@ function createAuth() {
       ]),
     ),
     plugins: [
-      dash(),
       expo(),
       emailOTP({
         overrideDefaultEmailVerification: true,
