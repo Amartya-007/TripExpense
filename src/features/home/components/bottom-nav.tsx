@@ -31,7 +31,7 @@ export function BottomNav({ activeKey, onNavigate, onAdd }: BottomNavProps) {
               onPress={onAdd}
               style={({ pressed }) => [styles.fab, { backgroundColor: colors.primary, borderColor: colors.surface }, pressed && styles.pressed]}
             >
-              <Icon name="add" size={28} color="#FFFFFF" />
+              <Icon name="add" size={28} color={colors.primaryForeground} />
             </Pressable>
           ) : (
             <Pressable

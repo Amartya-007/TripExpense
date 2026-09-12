@@ -1,4 +1,3 @@
-import { router } from 'expo-router';
 import { View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -8,11 +7,9 @@ import { Icon } from '@/components/ui/icon';
 import { Screen } from '@/components/ui/screen';
 import { useAuth } from '@/features/auth/auth-provider';
 import { BottomNav } from '@/features/home/components/bottom-nav';
-import { DASHBOARD_MOCK_DATA, DASHBOARD_NAV_ITEMS } from '@/features/home/dashboard-config';
-import { appToast } from '@/lib/toast/app-toast';
+import { DASHBOARD_MOCK_DATA } from '@/features/home/dashboard-config';
+import { useDashboardNavigation } from '@/features/home/use-dashboard-navigation';
 import { useAppTheme } from '@/theme/theme-provider';
-
-type NavKey = (typeof DASHBOARD_NAV_ITEMS)[number]['key'];
 
 function formatCurrency(amount: number) {
   return `₹${amount.toLocaleString('en-IN')}`;
@@ -23,6 +20,7 @@ export default function DashboardScreen() {
   const { colors, radius, spacing } = useAppTheme();
   const insets = useSafeAreaInsets();
   const { trip, today } = DASHBOARD_MOCK_DATA;
+  const { handleNavigate, handleAdd } = useDashboardNavigation('home');
 
   const spentPercent = Math.min(100, Math.round((trip.spent / trip.budget) * 100));
   const remaining = trip.budget - trip.spent;
@@ -30,25 +28,6 @@ export default function DashboardScreen() {
   const isOverLimit = today.spent > today.limit;
   const yesterdayDelta = Math.round(((today.spent - today.yesterday) / today.yesterday) * 100);
   const firstName = user?.name?.split(' ')[0] ?? 'there';
-
-  function handleNavigate(key: NavKey) {
-    if (key === 'home') return;
-    if (key === 'settings') {
-      router.push('/settings');
-      return;
-    }
-
-    const labels: Partial<Record<NavKey, string>> = { expenses: 'Expenses', settle: 'Settling up' };
-    appToast.info(`${labels[key] ?? 'This'} is coming soon`, {
-      description: 'Still wiring up the trip schema and API for this.',
-    });
-  }
-
-  function handleAdd() {
-    appToast.info('Adding expenses is coming soon', {
-      description: 'Still wiring up the trip schema and API for this.',
-    });
-  }
 
   return (
     <>

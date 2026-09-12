@@ -73,6 +73,8 @@ export default function MainLayout() {
           }}
         />
         <Stack.Screen name="settings" options={{ title: 'Settings', headerLeft: backButton }} />
+        <Stack.Screen name="expenses" options={{ title: 'Expenses', gestureEnabled: false, headerLeft: () => null }} />
+        <Stack.Screen name="settle" options={{ title: 'Settle up', gestureEnabled: false, headerLeft: () => null }} />
         <Stack.Screen name="delete-account" options={{ title: 'Delete account', headerLeft: backButton }} />
         <Stack.Screen name="biometric-lock" options={{ title: 'App lock', headerLeft: backButton }} />
       </Stack.Protected>
