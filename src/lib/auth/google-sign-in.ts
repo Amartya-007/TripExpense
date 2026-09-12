@@ -1,20 +1,12 @@
 import { Platform } from 'react-native';
 
 import { env } from '@/config/env';
+import { withTimeout } from '@/lib/async/with-timeout';
 import { authClient } from '@/lib/auth/auth-client';
 
 export type GoogleSignInOutcome = 'success' | 'cancelled';
 
 const GOOGLE_REQUEST_TIMEOUT_MS = 15_000;
-
-function withTimeout<T>(promise: Promise<T>, message: string) {
-  return Promise.race([
-    promise,
-    new Promise<never>((_, reject) => {
-      setTimeout(() => reject(new Error(message)), GOOGLE_REQUEST_TIMEOUT_MS);
-    }),
-  ]);
-}
 
 export async function signInWithGoogle(): Promise<GoogleSignInOutcome> {
   if (Platform.OS === 'web') {
@@ -50,11 +42,7 @@ export async function signInWithGoogle(): Promise<GoogleSignInOutcome> {
       response = await google.GoogleOneTapSignIn.presentExplicitSignIn();
     }
 
-    if (google.isCancelledResponse(response)) {
-      throw new Error(
-        'Google returned no credential after account selection. Verify the Android OAuth client uses package com.amartya.tripexpense and has the current debug SHA-1 registered.',
-      );
-    }
+    if (google.isCancelledResponse(response)) return 'cancelled';
 
     if (!google.isSuccessResponse(response)) {
       throw new Error('Google Sign-In could not be completed.');
@@ -66,6 +54,7 @@ export async function signInWithGoogle(): Promise<GoogleSignInOutcome> {
         idToken: { token: response.data.idToken },
         requestSignUp: true,
       }),
+      GOOGLE_REQUEST_TIMEOUT_MS,
       'Google sign-in timed out while contacting the server. Check your connection and try again.',
     );
 

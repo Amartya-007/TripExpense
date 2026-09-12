@@ -28,6 +28,22 @@ function withAndroidLocalProperties(config) {
 }
 
 function withStableDebugKeystore(config) {
+  const isLocalDevelopment = (process.env.EXPO_PUBLIC_APP_ENV || 'development') === 'development';
+  if (process.env.EXPO_STABLE_DEBUG_KEYSTORE !== '1' || process.env.CI || !isLocalDevelopment) {
+    return config;
+  }
+
+  const stableKeystore = path.join(
+    process.env.USERPROFILE || process.env.HOME || '',
+    '.android',
+    'tripexpense-debug.keystore',
+  );
+  if (!fs.existsSync(stableKeystore)) {
+    throw new Error(
+      `EXPO_STABLE_DEBUG_KEYSTORE=1 requires ${stableKeystore} to exist.`,
+    );
+  }
+
   return withAppBuildGradle(config, (modConfig) => {
     const stableStoreFile = "file(new File(System.getProperty('user.home'), '.android/tripexpense-debug.keystore'))";
     const contents = modConfig.modResults.contents.replace(

@@ -87,23 +87,35 @@ const replacements = [
   },
 ];
 
-let changed = 0;
+let patched = 0;
+const failures = [];
 
 for (const { file, find, replace } of replacements) {
   if (!fs.existsSync(file)) {
+    failures.push(`${file}: file not found`);
     continue;
   }
 
   const text = fs.readFileSync(file, 'utf8');
+  if (text.includes(replace)) {
+    console.log(`already patched ${file}`);
+    continue;
+  }
+
   if (!text.includes(find)) {
+    failures.push(`${file}: expected source pattern not found`);
     continue;
   }
 
   fs.writeFileSync(file, text.replace(find, replace));
-  changed += 1;
+  patched += 1;
   console.log(`patched ${file}`);
 }
 
-if (changed === 0) {
-  console.log('Android STL patches already applied (or packages missing).');
+if (failures.length > 0) {
+  console.error('Android native patches were not applied completely:');
+  for (const failure of failures) console.error(`- ${failure}`);
+  process.exitCode = 1;
+} else if (patched === 0) {
+  console.log('Android STL patches already applied.');
 }

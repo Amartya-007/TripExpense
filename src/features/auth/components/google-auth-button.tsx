@@ -6,6 +6,7 @@ import { AppText } from '@/components/ui/app-text';
 import { isGoogleAuthConfigured } from '@/config/env';
 import { useAuth } from '@/features/auth/auth-provider';
 import { GoogleLogo } from '@/features/auth/components/google-logo';
+import { withTimeout } from '@/lib/async/with-timeout';
 import { signInWithGoogle } from '@/lib/auth/google-sign-in';
 import { appToast } from '@/lib/toast/app-toast';
 import { useAppTheme } from '@/theme/theme-provider';
@@ -24,15 +25,11 @@ export function GoogleAuthButton({ compact = false, style }: { compact?: boolean
       const outcome = await signInWithGoogle();
       if (outcome === 'cancelled') return;
 
-      await Promise.race([
+      await withTimeout(
         refreshSession(),
-        new Promise<never>((_, reject) => {
-          setTimeout(
-            () => reject(new Error('The account was created, but the session could not be refreshed.')),
-            15_000,
-          );
-        }),
-      ]);
+        15_000,
+        'The account was created, but the session could not be refreshed.',
+      );
       router.replace('/verify-phone');
     } catch (error) {
       appToast.error('Could not continue with Google', {
