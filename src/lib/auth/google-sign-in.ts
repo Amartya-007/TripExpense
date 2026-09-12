@@ -5,6 +5,17 @@ import { authClient } from '@/lib/auth/auth-client';
 
 export type GoogleSignInOutcome = 'success' | 'cancelled';
 
+const GOOGLE_REQUEST_TIMEOUT_MS = 15_000;
+
+function withTimeout<T>(promise: Promise<T>, message: string) {
+  return Promise.race([
+    promise,
+    new Promise<never>((_, reject) => {
+      setTimeout(() => reject(new Error(message)), GOOGLE_REQUEST_TIMEOUT_MS);
+    }),
+  ]);
+}
+
 export async function signInWithGoogle(): Promise<GoogleSignInOutcome> {
   if (Platform.OS === 'web') {
     throw new Error('Google Sign-In is available in the iOS and Android apps.');
@@ -29,18 +40,34 @@ export async function signInWithGoogle(): Promise<GoogleSignInOutcome> {
 
   try {
     await google.GoogleOneTapSignIn.checkPlayServices();
-    const response = await google.GoogleOneTapSignIn.presentExplicitSignIn();
+    let response = await google.GoogleOneTapSignIn.signIn();
 
-    if (google.isCancelledResponse(response)) return 'cancelled';
+    if (google.isNoSavedCredentialFoundResponse(response)) {
+      response = await google.GoogleOneTapSignIn.createAccount();
+    }
+
+    if (google.isNoSavedCredentialFoundResponse(response)) {
+      response = await google.GoogleOneTapSignIn.presentExplicitSignIn();
+    }
+
+    if (google.isCancelledResponse(response)) {
+      throw new Error(
+        'Google returned no credential after account selection. Verify the Android OAuth client uses package com.amartya.tripexpense and has the current debug SHA-1 registered.',
+      );
+    }
 
     if (!google.isSuccessResponse(response)) {
       throw new Error('Google Sign-In could not be completed.');
     }
 
-    const result = await authClient.signIn.social({
-      provider: 'google',
-      idToken: { token: response.data.idToken },
-    });
+    const result = await withTimeout(
+      authClient.signIn.social({
+        provider: 'google',
+        idToken: { token: response.data.idToken },
+        requestSignUp: true,
+      }),
+      'Google sign-in timed out while contacting the server. Check your connection and try again.',
+    );
 
     if (result.error) {
       if (result.error.code === 'OAUTH_LINK_ERROR') {
@@ -49,7 +76,9 @@ export async function signInWithGoogle(): Promise<GoogleSignInOutcome> {
         );
       }
 
-      throw new Error('Google Sign-In could not be completed.');
+      throw new Error(
+        result.error.message || result.error.code || 'Google Sign-In could not be completed.',
+      );
     }
 
     return 'success';

@@ -16,6 +16,7 @@ const otpSchema = z.string().trim().regex(/^\d{6}$/, 'Enter the six-digit code')
 export const signInSchema = z.object({
   email: emailSchema,
   password: currentPasswordSchema,
+  rememberMe: z.boolean().default(true),
 });
 
 export const signUpSchema = z
@@ -49,7 +50,7 @@ export const resetPasswordSchema = z
     path: ['confirmPassword'],
   });
 
-export type SignInValues = z.infer<typeof signInSchema>;
+export type SignInValues = z.input<typeof signInSchema>;
 export type SignUpValues = z.infer<typeof signUpSchema>;
 export type ForgotPasswordValues = z.infer<typeof forgotPasswordSchema>;
 export type VerifyEmailOtpValues = z.infer<typeof verifyEmailOtpSchema>;

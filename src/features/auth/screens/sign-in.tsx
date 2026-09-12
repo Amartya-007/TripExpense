@@ -34,7 +34,7 @@ export default function SignInScreen() {
     formState: { isSubmitting, isValid },
   } = useForm<SignInValues>({
     resolver: zodResolver(signInSchema),
-    defaultValues: { email: "", password: "" },
+    defaultValues: { email: "", password: "", rememberMe: true },
     mode: "onChange",
   });
 
@@ -43,7 +43,7 @@ export default function SignInScreen() {
       const result = await authClient.signIn.email({
         email: values.email.trim().toLowerCase(),
         password: values.password,
-        rememberMe,
+        rememberMe: values.rememberMe ?? rememberMe,
       });
 
       if (result.error) {
