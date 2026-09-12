@@ -1,6 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Link, router } from "expo-router";
-import { useState } from "react";
 import { Pressable, View } from "react-native";
 import { Controller, useForm } from "react-hook-form";
 
@@ -27,7 +26,6 @@ import { useAppTheme } from "@/theme/theme-provider";
 export default function SignInScreen() {
   const { refreshSession } = useAuth();
   const { spacing } = useAppTheme();
-  const [rememberMe, setRememberMe] = useState(true);
   const {
     control,
     handleSubmit,
@@ -43,7 +41,7 @@ export default function SignInScreen() {
       const result = await authClient.signIn.email({
         email: values.email.trim().toLowerCase(),
         password: values.password,
-        rememberMe: values.rememberMe ?? rememberMe,
+        rememberMe: values.rememberMe,
       });
 
       if (result.error) {
@@ -140,10 +138,16 @@ export default function SignInScreen() {
             justifyContent: "space-between",
           }}
         >
-          <Checkbox
-            checked={rememberMe}
-            onChange={setRememberMe}
-            label="Remember me"
+          <Controller
+            control={control}
+            name="rememberMe"
+            render={({ field: { onChange, value } }) => (
+              <Checkbox
+                checked={value ?? true}
+                onChange={onChange}
+                label="Remember me"
+              />
+            )}
           />
           <Link href="/forgot-password" asChild>
             <Pressable

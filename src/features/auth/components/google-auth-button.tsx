@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { ActivityIndicator, Platform, Pressable, type StyleProp, type ViewStyle } from 'react-native';
-import { router } from 'expo-router';
 
 import { AppText } from '@/components/ui/app-text';
 import { isGoogleAuthConfigured } from '@/config/env';
@@ -30,7 +29,6 @@ export function GoogleAuthButton({ compact = false, style }: { compact?: boolean
         15_000,
         'The account was created, but the session could not be refreshed.',
       );
-      router.replace('/verify-phone');
     } catch (error) {
       appToast.error('Could not continue with Google', {
         description: error instanceof Error ? error.message : 'Please try again.',
