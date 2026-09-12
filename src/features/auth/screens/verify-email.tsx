@@ -1,5 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Link, useLocalSearchParams } from 'expo-router';
+import { Link, router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 
@@ -44,6 +44,7 @@ export default function VerifyEmailScreen() {
       }
 
       await refreshSession();
+      router.replace('/verify-phone');
       appToast.success('Email verified');
     } catch {
       appToast.error('Verification failed', {

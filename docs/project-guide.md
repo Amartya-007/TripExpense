@@ -182,6 +182,10 @@ Never use a debug keystore for a production release. Register separate SHA-1 fin
 
 The postinstall script [patch-android-stl.mjs](../scripts/patch-android-stl.mjs) patches third-party Android CMake/Kotlin configuration so native libraries link correctly with the shared C++ runtime and Nitro Kotlin sources.
 
+Run every Expo or project script from the repository root (`E:\expo-auth-starter`), not from `android/`. The Android directory is a generated Gradle project and does not contain the root `package.json` or `scripts/` directory.
+
+The project pins and verifies the compatible Nitro dependency pair during `npm install`. Do not upgrade either Nitro package independently.
+
 It is idempotent:
 
 ```powershell
@@ -259,6 +263,15 @@ npm run typecheck
 ```
 
 Then rebuild. If the patch script reports a missing pattern, inspect the dependency version and update the patch deliberately.
+
+### Expo commands report a missing `android/package.json` or `android/scripts/...`
+
+The command was run from the generated `android/` directory. Return to the repository root, then run:
+
+```powershell
+cd E:\expo-auth-starter
+npx expo run:android
+```
 
 ### Local app cannot reach the API
 
