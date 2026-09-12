@@ -66,6 +66,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     plugins: [
       routerPlugin,
       ...(config.plugins ?? []).filter((plugin) => getPluginName(plugin) !== 'expo-router'),
+      './plugins/with-android-local-config',
       ...(googlePlugin ? [googlePlugin] : []),
     ],
   };

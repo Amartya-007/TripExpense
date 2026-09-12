@@ -5,6 +5,7 @@ import { AppText } from '@/components/ui/app-text';
 import { isGoogleAuthConfigured } from '@/config/env';
 import { useAuth } from '@/features/auth/auth-provider';
 import { GoogleLogo } from '@/features/auth/components/google-logo';
+import { withTimeout } from '@/lib/async/with-timeout';
 import { signInWithGoogle } from '@/lib/auth/google-sign-in';
 import { appToast } from '@/lib/toast/app-toast';
 import { useAppTheme } from '@/theme/theme-provider';
@@ -23,7 +24,11 @@ export function GoogleAuthButton({ compact = false, style }: { compact?: boolean
       const outcome = await signInWithGoogle();
       if (outcome === 'cancelled') return;
 
-      await refreshSession();
+      await withTimeout(
+        refreshSession(),
+        15_000,
+        'The account was created, but the session could not be refreshed.',
+      );
     } catch (error) {
       appToast.error('Could not continue with Google', {
         description: error instanceof Error ? error.message : 'Please try again.',

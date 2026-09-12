@@ -1,9 +1,12 @@
 import { Platform } from 'react-native';
 
 import { env } from '@/config/env';
+import { withTimeout } from '@/lib/async/with-timeout';
 import { authClient } from '@/lib/auth/auth-client';
 
 export type GoogleSignInOutcome = 'success' | 'cancelled';
+
+const GOOGLE_REQUEST_TIMEOUT_MS = 15_000;
 
 export async function signInWithGoogle(): Promise<GoogleSignInOutcome> {
   if (Platform.OS === 'web') {
@@ -29,7 +32,15 @@ export async function signInWithGoogle(): Promise<GoogleSignInOutcome> {
 
   try {
     await google.GoogleOneTapSignIn.checkPlayServices();
-    const response = await google.GoogleOneTapSignIn.presentExplicitSignIn();
+    let response = await google.GoogleOneTapSignIn.signIn();
+
+    if (google.isNoSavedCredentialFoundResponse(response)) {
+      response = await google.GoogleOneTapSignIn.createAccount();
+    }
+
+    if (google.isNoSavedCredentialFoundResponse(response)) {
+      response = await google.GoogleOneTapSignIn.presentExplicitSignIn();
+    }
 
     if (google.isCancelledResponse(response)) return 'cancelled';
 
@@ -37,10 +48,15 @@ export async function signInWithGoogle(): Promise<GoogleSignInOutcome> {
       throw new Error('Google Sign-In could not be completed.');
     }
 
-    const result = await authClient.signIn.social({
-      provider: 'google',
-      idToken: { token: response.data.idToken },
-    });
+    const result = await withTimeout(
+      authClient.signIn.social({
+        provider: 'google',
+        idToken: { token: response.data.idToken },
+        requestSignUp: true,
+      }),
+      GOOGLE_REQUEST_TIMEOUT_MS,
+      'Google sign-in timed out while contacting the server. Check your connection and try again.',
+    );
 
     if (result.error) {
       if (result.error.code === 'OAUTH_LINK_ERROR') {
@@ -49,7 +65,9 @@ export async function signInWithGoogle(): Promise<GoogleSignInOutcome> {
         );
       }
 
-      throw new Error('Google Sign-In could not be completed.');
+      throw new Error(
+        result.error.message || result.error.code || 'Google Sign-In could not be completed.',
+      );
     }
 
     return 'success';
