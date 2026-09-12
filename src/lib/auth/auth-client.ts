@@ -1,4 +1,5 @@
 import { expoClient } from '@better-auth/expo/client';
+import { dashClient } from '@better-auth/infra/native';
 import { emailOTPClient, inferAdditionalFields, phoneNumberClient } from 'better-auth/client/plugins';
 import { createAuthClient } from 'better-auth/react';
 import * as SecureStore from 'expo-secure-store';
@@ -15,6 +16,7 @@ export const authClient = createAuthClient({
     }),
     emailOTPClient(),
     phoneNumberClient(),
+    dashClient(),
     expoClient({
       scheme: appConfig.scheme,
       storagePrefix: appConfig.scheme,
