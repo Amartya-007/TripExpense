@@ -1,3 +1,4 @@
+import { useFonts } from 'expo-font';
 import * as SplashScreen from 'expo-splash-screen';
 import { Stack } from 'expo-router/stack';
 import { StatusBar } from 'expo-status-bar';
@@ -25,8 +26,17 @@ function RootNavigator() {
   const { isInitialSessionUnavailable, isRefreshingSession, phase, refreshSession } = useAuth();
   const { isReady: isBiometricReady } = useBiometricLock();
   const { colors, isReady: isThemeReady, resolvedTheme } = useAppTheme();
+  const [areFontsLoaded, fontError] = useFonts({
+    'Inter-Regular': require('../../assets/fonts/Inter-Regular.otf'),
+    'Inter-Medium': require('../../assets/fonts/Inter-Medium.otf'),
+    'Inter-SemiBold': require('../../assets/fonts/Inter-SemiBold.otf'),
+    'Inter-Bold': require('../../assets/fonts/Inter-Bold.otf'),
+  });
   const isStarting =
-    (phase === 'checking' && !isInitialSessionUnavailable) || !isBiometricReady || !isThemeReady;
+    (phase === 'checking' && !isInitialSessionUnavailable) ||
+    !isBiometricReady ||
+    !isThemeReady ||
+    (!areFontsLoaded && !fontError);
   const initialRouteName = phase === 'signed-out' ? '(auth)' : '(main)';
 
   useEffect(() => {

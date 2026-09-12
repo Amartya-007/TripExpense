@@ -5,7 +5,6 @@ import { AppText } from '@/components/ui/app-text';
 import { Icon } from '@/components/ui/icon';
 import { useAppTheme } from '@/theme/theme-provider';
 import { DASHBOARD_NAV_ITEMS } from '@/features/home/dashboard-config';
-import type { IconName } from '@/components/ui/icon';
 
 type BottomNavProps = {
   activeKey: (typeof DASHBOARD_NAV_ITEMS)[number]['key'];
@@ -43,7 +42,7 @@ export function BottomNav({ activeKey, onNavigate, onAdd }: BottomNavProps) {
               onPress={() => onNavigate(item.key)}
               style={({ pressed }) => [styles.item, pressed && styles.pressed]}
             >
-              <Icon name={item.icon as IconName} size={20} color={activeKey === item.key ? colors.primary : colors.textMuted} />
+              <Icon name={item.icon} size={20} color={activeKey === item.key ? colors.primary : colors.textMuted} />
               <AppText style={[styles.label, { color: activeKey === item.key ? colors.primary : colors.textMuted }]}>
                 {item.label.toUpperCase()}
               </AppText>
