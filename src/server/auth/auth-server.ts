@@ -1,5 +1,6 @@
 import { drizzleAdapter } from '@better-auth/drizzle-adapter';
 import { expo } from '@better-auth/expo';
+import { dash } from '@better-auth/infra';
 import { betterAuth } from 'better-auth/minimal';
 import { emailOTP, phoneNumber } from 'better-auth/plugins';
 
@@ -70,6 +71,7 @@ function createAuth() {
     ),
     plugins: [
       expo(),
+      dash({ apiKey: env.BETTER_AUTH_API_KEY }),
       emailOTP({
         overrideDefaultEmailVerification: true,
         otpLength: 6,
