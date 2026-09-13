@@ -6,15 +6,19 @@ export type PersonId = 'you' | 'priya' | 'rohan' | 'sneha';
 export type Person = {
   id: PersonId;
   name: string;
-  /** Key into the theme's decorative color set - resolved at render time so it follows light/dark mode. */
-  color: 'mint' | 'lavender' | 'peach' | 'aqua';
+  /** Key into a solid, always-visible theme token - deliberately not the
+   * decorative tint tokens (mint/aqua/peach/lavender), since those are
+   * pale background fills in the current theme and would render as
+   * near-invisible dots. primary/accent/secondary/info are guaranteed
+   * solid in both light and dark mode regardless of theme changes. */
+  color: 'primary' | 'accent' | 'secondary' | 'info';
 };
 
 export const TRIP_PEOPLE: Person[] = [
-  { id: 'you', name: 'You', color: 'aqua' },
-  { id: 'priya', name: 'Priya', color: 'mint' },
-  { id: 'rohan', name: 'Rohan', color: 'lavender' },
-  { id: 'sneha', name: 'Sneha', color: 'peach' },
+  { id: 'you', name: 'You', color: 'primary' },
+  { id: 'priya', name: 'Priya', color: 'accent' },
+  { id: 'rohan', name: 'Rohan', color: 'secondary' },
+  { id: 'sneha', name: 'Sneha', color: 'info' },
 ];
 
 export type ExpenseCategory = 'food' | 'transport' | 'stay' | 'ticket' | 'other';
