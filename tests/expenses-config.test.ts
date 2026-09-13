@@ -3,7 +3,8 @@ import { describe, expect, it } from 'vitest';
 import { DASHBOARD_MOCK_DATA } from '@/features/home/dashboard-config';
 import {
   computeNetBalances,
-  EXPENSE_GROUP_ORDER,
+  getExpense,
+  groupExpensesByDate,
   MOCK_EXPENSES,
   simplifyDebts,
   TRIP_PEOPLE,
@@ -14,7 +15,7 @@ import {
 describe('computeNetBalances', () => {
   it('splits a simple two-person expense evenly', () => {
     const expenses: Expense[] = [
-      { id: 'x1', title: 'Test', amount: 100, category: 'other', paidBy: 'you', splitBetween: ['you', 'priya'], group: 'Today' },
+      { id: 'x1', title: 'Test', amount: 100, category: 'other', paidBy: 'you', splitBetween: ['you', 'priya'], dateTime: '2026-09-13T09:00:00' },
     ];
 
     const balances = computeNetBalances(expenses);
@@ -37,11 +38,49 @@ describe('computeNetBalances', () => {
     expect(totalSpent).toBe(DASHBOARD_MOCK_DATA.trip.spent);
     expect(MOCK_EXPENSES).toHaveLength(DASHBOARD_MOCK_DATA.trip.expenses);
 
-    const byGroup = (group: (typeof EXPENSE_GROUP_ORDER)[number]) =>
-      MOCK_EXPENSES.filter((expense) => expense.group === group).reduce((sum, expense) => sum + expense.amount, 0);
+    // Filtered by the fixed calendar dates the mock data was written against
+    // (not by the 'Today'/'Yesterday' label, which is relative to whenever
+    // the test happens to run and would silently drift out of sync).
+    const byDate = (dateKey: string) =>
+      MOCK_EXPENSES.filter((expense) => expense.dateTime.startsWith(dateKey)).reduce((sum, expense) => sum + expense.amount, 0);
 
-    expect(byGroup('Today')).toBe(DASHBOARD_MOCK_DATA.today.spent);
-    expect(byGroup('Yesterday')).toBe(DASHBOARD_MOCK_DATA.today.yesterday);
+    expect(byDate('2026-09-13')).toBe(DASHBOARD_MOCK_DATA.today.spent);
+    expect(byDate('2026-09-12')).toBe(DASHBOARD_MOCK_DATA.today.yesterday);
+  });
+});
+
+describe('groupExpensesByDate', () => {
+  it('groups by calendar date, most recent date first', () => {
+    const groups = groupExpensesByDate(MOCK_EXPENSES);
+    const dateKeys = groups.map((group) => group.dateKey);
+
+    expect(dateKeys).toEqual(['2026-09-13', '2026-09-12', '2026-09-11', '2026-09-10']);
+  });
+
+  it('orders expenses within a day most recent first', () => {
+    const groups = groupExpensesByDate(MOCK_EXPENSES);
+    const day1 = groups.find((group) => group.dateKey === '2026-09-10');
+
+    expect(day1).toBeDefined();
+    const times = day1!.expenses.map((expense) => expense.dateTime);
+    const sorted = [...times].sort().reverse();
+    expect(times).toEqual(sorted);
+  });
+
+  it('every expense appears in exactly one group', () => {
+    const groups = groupExpensesByDate(MOCK_EXPENSES);
+    const totalGrouped = groups.reduce((sum, group) => sum + group.expenses.length, 0);
+    expect(totalGrouped).toBe(MOCK_EXPENSES.length);
+  });
+});
+
+describe('getExpense', () => {
+  it('finds an expense by id', () => {
+    expect(getExpense(MOCK_EXPENSES, 'e1')?.title).toBe('Flight/cab from airport');
+  });
+
+  it('returns undefined for an unknown id', () => {
+    expect(getExpense(MOCK_EXPENSES, 'does-not-exist')).toBeUndefined();
   });
 });
 

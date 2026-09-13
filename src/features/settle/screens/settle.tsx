@@ -9,10 +9,10 @@ import { Screen } from '@/components/ui/screen';
 import {
   computeNetBalances,
   getPerson,
-  MOCK_EXPENSES,
   simplifyDebts,
   TRIP_PEOPLE,
 } from '@/features/expenses/expenses-config';
+import { useTripData } from '@/features/expenses/trip-data-provider';
 import { BottomNav } from '@/features/home/components/bottom-nav';
 import { useDashboardNavigation } from '@/features/home/use-dashboard-navigation';
 import { appToast } from '@/lib/toast/app-toast';
@@ -26,8 +26,9 @@ export default function SettleScreen() {
   const { colors, spacing } = useAppTheme();
   const insets = useSafeAreaInsets();
   const { handleNavigate, handleAdd } = useDashboardNavigation('settle');
+  const { expenses } = useTripData();
 
-  const balances = computeNetBalances(MOCK_EXPENSES);
+  const balances = computeNetBalances(expenses);
   const settlements = simplifyDebts(balances);
 
   function handleRemind(name: string) {
@@ -60,7 +61,7 @@ export default function SettleScreen() {
                 </View>
                 <AppText
                   variant="body"
-                  style={{ color: isSettled ? colors.textMuted : isOwed ? colors.success : colors.danger }}>
+                  style={{ color: isSettled ? colors.textMuted : isOwed ? colors.success : colors.text }}>
                   {isSettled ? 'Settled up' : isOwed ? `Gets back ${formatCurrency(balance)}` : `Owes ${formatCurrency(balance)}`}
                 </AppText>
               </View>

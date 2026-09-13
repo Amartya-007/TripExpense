@@ -6,9 +6,11 @@ import { Card } from '@/components/ui/card';
 import { Icon } from '@/components/ui/icon';
 import { Screen } from '@/components/ui/screen';
 import { useAuth } from '@/features/auth/auth-provider';
+import { useTripData } from '@/features/expenses/trip-data-provider';
 import { BottomNav } from '@/features/home/components/bottom-nav';
 import { DASHBOARD_MOCK_DATA } from '@/features/home/dashboard-config';
 import { useDashboardNavigation } from '@/features/home/use-dashboard-navigation';
+import { toISODate } from '@/lib/date/friendly-date';
 import { useAppTheme } from '@/theme/theme-provider';
 
 function formatCurrency(amount: number) {
@@ -19,8 +21,15 @@ export default function DashboardScreen() {
   const { user } = useAuth();
   const { colors, radius, spacing } = useAppTheme();
   const insets = useSafeAreaInsets();
-  const { trip, today } = DASHBOARD_MOCK_DATA;
+  const { trip: tripConfig, today: todayConfig } = DASHBOARD_MOCK_DATA;
   const { handleNavigate, handleAdd } = useDashboardNavigation('home');
+  const { expenses } = useTripData();
+
+  const spent = expenses.reduce((sum, expense) => sum + expense.amount, 0);
+  const todayKey = toISODate(new Date());
+  const todaySpent = expenses.filter((expense) => expense.dateTime.startsWith(todayKey)).reduce((sum, expense) => sum + expense.amount, 0);
+  const trip = { ...tripConfig, spent, expenses: expenses.length };
+  const today = { ...todayConfig, spent: todaySpent, burnRate: Math.round((todaySpent / todayConfig.limit) * 100) };
 
   const spentPercent = Math.min(100, Math.round((trip.spent / trip.budget) * 100));
   const remaining = trip.budget - trip.spent;
