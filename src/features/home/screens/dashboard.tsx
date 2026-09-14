@@ -3,6 +3,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { AppText } from '@/components/ui/app-text';
 import { Card } from '@/components/ui/card';
+import { FadeIn } from '@/components/ui/fade-in';
 import { Icon } from '@/components/ui/icon';
 import { Screen } from '@/components/ui/screen';
 import { useAuth } from '@/features/auth/auth-provider';
@@ -40,7 +41,8 @@ export default function DashboardScreen() {
 
   return (
     <>
-      <Screen hasHeader contentStyle={{ paddingBottom: insets.bottom + 112, gap: spacing.lg }}>
+      <Screen hasHeader contentStyle={{ paddingBottom: insets.bottom + 112 }}>
+        <FadeIn style={{ gap: spacing.lg }}>
         <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
           <View style={{ gap: spacing.xs }}>
             <AppText variant="eyebrow">{trip.name}</AppText>
@@ -161,6 +163,7 @@ export default function DashboardScreen() {
             {today.burnRate}% of today’s {formatCurrency(today.limit)} limit used
           </AppText>
         </Card>
+        </FadeIn>
       </Screen>
       <BottomNav activeKey="home" onNavigate={handleNavigate} onAdd={handleAdd} />
     </>

@@ -1,5 +1,6 @@
-import { useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Modal, Pressable, View, type GestureResponderEvent } from 'react-native';
+import Animated, { Easing, useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 
 import { AppText } from '@/components/ui/app-text';
 import { Icon } from '@/components/ui/icon';
@@ -21,6 +22,9 @@ const MONTH_LABELS = [
   'July', 'August', 'September', 'October', 'November', 'December',
 ];
 const SWIPE_THRESHOLD = 50;
+const OPEN_DURATION = 260;
+const CLOSE_DURATION = 200;
+const SHEET_TRAVEL = 520;
 
 function buildMonthGrid(viewMonth: Date): Date[] {
   const firstOfMonth = new Date(viewMonth.getFullYear(), viewMonth.getMonth(), 1);
@@ -43,10 +47,21 @@ export function DatePicker({ label, value, onChange, minDate, maxDate, disabled 
   const maxDateValue = maxDate ? startOfDay(parseISODate(maxDate)) : null;
 
   const [open, setOpen] = useState(false);
+  const progress = useSharedValue(0);
   const [viewMonth, setViewMonth] = useState(() => new Date(selected.getFullYear(), selected.getMonth(), 1));
   const touchStartX = useRef<number | null>(null);
 
   const days = useMemo(() => buildMonthGrid(viewMonth), [viewMonth]);
+
+  useEffect(() => {
+    progress.value = withTiming(open ? 1 : 0, {
+      duration: open ? OPEN_DURATION : CLOSE_DURATION,
+      easing: open ? Easing.out(Easing.cubic) : Easing.in(Easing.cubic),
+    });
+  }, [open, progress]);
+
+  const backdropStyle = useAnimatedStyle(() => ({ opacity: progress.value * 0.45 }));
+  const sheetStyle = useAnimatedStyle(() => ({ transform: [{ translateY: (1 - progress.value) * SHEET_TRAVEL }] }));
 
   function openPicker() {
     setViewMonth(new Date(selected.getFullYear(), selected.getMonth(), 1));
@@ -108,21 +123,29 @@ export function DatePicker({ label, value, onChange, minDate, maxDate, disabled 
         <Icon name="calendar" size={18} color={colors.textMuted} />
       </Pressable>
 
-      <Modal animationType="slide" onRequestClose={() => setOpen(false)} transparent visible={open}>
-        <Pressable
-          accessibilityLabel="Close date picker"
-          onPress={() => setOpen(false)}
-          style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.45)', justifyContent: 'flex-end' }}>
+      <Modal animationType="none" onRequestClose={() => setOpen(false)} transparent visible={open}>
+        <View style={{ flex: 1, justifyContent: 'flex-end' }}>
+          <Animated.View
+            style={[{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: '#000000' }, backdropStyle]}
+          />
           <Pressable
-            onPress={(event) => event.stopPropagation()}
+            accessibilityLabel="Close date picker"
+            onPress={() => setOpen(false)}
+            style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}
+          />
+
+          <Animated.View
             onTouchEnd={handleTouchEnd}
             onTouchStart={handleTouchStart}
-            style={{
-              backgroundColor: colors.surface,
-              borderTopLeftRadius: radius.xl,
-              borderTopRightRadius: radius.xl,
-              paddingBottom: spacing.xl,
-            }}>
+            style={[
+              {
+                backgroundColor: colors.surface,
+                borderTopLeftRadius: radius.xl,
+                borderTopRightRadius: radius.xl,
+                paddingBottom: spacing.xl,
+              },
+              sheetStyle,
+            ]}>
             <View style={{ alignItems: 'center', paddingTop: spacing.sm, paddingBottom: spacing.xs }}>
               <View style={{ width: 40, height: 4, borderRadius: 2, backgroundColor: colors.border }} />
             </View>
@@ -229,8 +252,8 @@ export function DatePicker({ label, value, onChange, minDate, maxDate, disabled 
                 </AppText>
               </Pressable>
             </View>
-          </Pressable>
-        </Pressable>
+          </Animated.View>
+        </View>
       </Modal>
     </View>
   );

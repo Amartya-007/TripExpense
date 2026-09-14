@@ -4,6 +4,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { AppText } from '@/components/ui/app-text';
 import { Card } from '@/components/ui/card';
+import { FadeIn } from '@/components/ui/fade-in';
 import { Icon } from '@/components/ui/icon';
 import { Screen } from '@/components/ui/screen';
 import {
@@ -82,7 +83,8 @@ export default function ExpensesScreen() {
 
   return (
     <>
-      <Screen hasHeader contentStyle={{ paddingBottom: insets.bottom + 112, gap: spacing.lg }}>
+      <Screen hasHeader contentStyle={{ paddingBottom: insets.bottom + 112 }}>
+        <FadeIn style={{ gap: spacing.lg }}>
         <View style={{ gap: spacing.xs }}>
           <AppText variant="eyebrow">All expenses</AppText>
           <AppText variant="hero">{formatCurrency(totalSpent)}</AppText>
@@ -106,6 +108,7 @@ export default function ExpensesScreen() {
             ))}
           </Card>
         ))}
+        </FadeIn>
       </Screen>
       <BottomNav activeKey="expenses" onNavigate={handleNavigate} onAdd={handleAdd} />
     </>

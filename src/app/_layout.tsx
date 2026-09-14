@@ -8,6 +8,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 import { AppToaster } from '@/components/ui/app-toaster';
 import { Button } from '@/components/ui/button';
+import { FadeIn } from '@/components/ui/fade-in';
 import { HeroPanel } from '@/components/ui/hero-panel';
 import { Screen } from '@/components/ui/screen';
 import { useAuth } from '@/features/auth/auth-provider';
@@ -53,18 +54,20 @@ function RootNavigator() {
     return (
       <>
         <StatusBar style={resolvedTheme === 'dark' ? 'light' : 'dark'} />
-        <Screen scroll={false} contentStyle={{ justifyContent: 'center' }}>
-          <HeroPanel
-            eyebrow="Connection needed"
-            title="We couldn’t open your account"
-            body="Check your internet connection, then try again. Your saved sign-in has not been removed."
-          />
-          <Button
-            label="Try again"
-            loading={isRefreshingSession}
-            onPress={() => void refreshSession()}
-          />
-        </Screen>
+        <FadeIn>
+          <Screen scroll={false} contentStyle={{ justifyContent: 'center' }}>
+            <HeroPanel
+              eyebrow="Connection needed"
+              title="We couldn’t open your account"
+              body="Check your internet connection, then try again. Your saved sign-in has not been removed."
+            />
+            <Button
+              label="Try again"
+              loading={isRefreshingSession}
+              onPress={() => void refreshSession()}
+            />
+          </Screen>
+        </FadeIn>
       </>
     );
   }
@@ -72,30 +75,32 @@ function RootNavigator() {
   return (
     <>
       <StatusBar style={resolvedTheme === 'dark' ? 'light' : 'dark'} />
-      <Stack
-        initialRouteName={initialRouteName}
-        screenOptions={{
-          animation: 'none',
-          headerShown: false,
-          contentStyle: { backgroundColor: colors.background },
-        }}>
-        <Stack.Screen name="index" />
-        <Stack.Screen name="(public)" />
+      <FadeIn>
+        <Stack
+          initialRouteName={initialRouteName}
+          screenOptions={{
+            animation: 'none',
+            headerShown: false,
+            contentStyle: { backgroundColor: colors.background },
+          }}>
+          <Stack.Screen name="index" />
+          <Stack.Screen name="(public)" />
 
-        <Stack.Protected guard={phase === 'signed-out'}>
-          <Stack.Screen name="(auth)" />
-        </Stack.Protected>
+          <Stack.Protected guard={phase === 'signed-out'}>
+            <Stack.Screen name="(auth)" />
+          </Stack.Protected>
 
-        <Stack.Protected
-          guard={
-            phase === 'needs-phone-verification' ||
-            phase === 'needs-onboarding' ||
-            phase === 'ready'
-          }>
-          <Stack.Screen name="(main)" />
-        </Stack.Protected>
-      </Stack>
-      <BiometricGate />
+          <Stack.Protected
+            guard={
+              phase === 'needs-phone-verification' ||
+              phase === 'needs-onboarding' ||
+              phase === 'ready'
+            }>
+            <Stack.Screen name="(main)" />
+          </Stack.Protected>
+        </Stack>
+        <BiometricGate />
+      </FadeIn>
     </>
   );
 }

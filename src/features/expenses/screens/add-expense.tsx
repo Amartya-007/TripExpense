@@ -6,6 +6,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { AppText } from '@/components/ui/app-text';
 import { Button } from '@/components/ui/button';
 import { DatePicker } from '@/components/ui/date-picker';
+import { FadeIn } from '@/components/ui/fade-in';
 import { Input } from '@/components/ui/input';
 import { Screen } from '@/components/ui/screen';
 import {
@@ -80,11 +81,16 @@ export default function AddExpenseScreen() {
 
   const parsedAmount = Number(amount);
   const canSubmit = title.trim().length > 0 && parsedAmount > 0 && splitBetween.length > 0;
+  const allSelected = splitBetween.length === ALL_PEOPLE_IDS.length;
 
   function toggleSplit(personId: PersonId) {
     setSplitBetween((current) =>
       current.includes(personId) ? current.filter((candidate) => candidate !== personId) : [...current, personId],
     );
+  }
+
+  function toggleAll() {
+    setSplitBetween((current) => (current.length === ALL_PEOPLE_IDS.length ? [] : [...ALL_PEOPLE_IDS]));
   }
 
   function buildDateTime(): string {
@@ -119,7 +125,8 @@ export default function AddExpenseScreen() {
   }
 
   return (
-    <Screen hasHeader contentStyle={{ paddingBottom: insets.bottom + spacing.xl, gap: spacing.xl }}>
+    <Screen hasHeader contentStyle={{ paddingBottom: insets.bottom + spacing.xl }}>
+      <FadeIn style={{ gap: spacing.xl }}>
       <View style={{ alignItems: 'center', gap: spacing.xs, paddingTop: spacing.md }}>
         <AppText variant="caption" tone="muted">
           Amount
@@ -174,6 +181,7 @@ export default function AddExpenseScreen() {
       <View style={{ gap: spacing.sm }}>
         <AppText variant="caption">Split between</AppText>
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm }}>
+          <Chip label="All" selected={allSelected} onPress={toggleAll} />
           {TRIP_PEOPLE.map((person) => (
             <Chip
               key={person.id}
@@ -202,6 +210,7 @@ export default function AddExpenseScreen() {
         onPress={handleSubmit}
         disabled={!canSubmit}
       />
+      </FadeIn>
     </Screen>
   );
 }

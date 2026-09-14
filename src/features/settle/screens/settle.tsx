@@ -5,6 +5,7 @@ import { AppText } from '@/components/ui/app-text';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { EmptyState } from '@/components/ui/empty-state';
+import { FadeIn } from '@/components/ui/fade-in';
 import { Screen } from '@/components/ui/screen';
 import {
   computeNetBalances,
@@ -39,7 +40,8 @@ export default function SettleScreen() {
 
   return (
     <>
-      <Screen hasHeader contentStyle={{ paddingBottom: insets.bottom + 112, gap: spacing.lg }}>
+      <Screen hasHeader contentStyle={{ paddingBottom: insets.bottom + 112 }}>
+        <FadeIn style={{ gap: spacing.lg }}>
         <View style={{ gap: spacing.xs }}>
           <AppText variant="eyebrow">Balances</AppText>
           <AppText variant="title">Who owes what</AppText>
@@ -104,6 +106,7 @@ export default function SettleScreen() {
             );
           })
         )}
+        </FadeIn>
       </Screen>
       <BottomNav activeKey="settle" onNavigate={handleNavigate} onAdd={handleAdd} />
     </>
