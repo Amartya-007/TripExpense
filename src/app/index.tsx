@@ -14,7 +14,7 @@ export default function EntryPage() {
         ? '/verify-phone'
         : phase === 'needs-onboarding'
           ? '/profile'
-          : '/dashboard';
+          : '/trips';
 
   return <Redirect href={destination} />;
 }
