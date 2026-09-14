@@ -64,9 +64,9 @@ type ButtonSize = 'sm' | 'md' | 'lg';
 function getButtonVariantStyles(colors: ThemeColors) {
   return {
     primary: {
-      backgroundColor: colors.accent,
-      borderColor: colors.accent,
-      foreground: colors.accentForeground,
+      backgroundColor: colors.primary,
+      borderColor: colors.primary,
+      foreground: colors.primaryForeground,
     },
     secondary: {
       backgroundColor: colors.secondary,

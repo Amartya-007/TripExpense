@@ -5,15 +5,15 @@ export const colors = {
     backgroundHigh: '#FFFFFF',
     surface: '#FFFFFF',
     surfaceStrong: '#F1F5F9',
-    border: 'rgba(15, 23, 42, 0.08)',
+    border: '#E2E8F0',
 
     // Typography (Zinc-tinted high legibility)
     text: '#0F172A',
     textMuted: '#64748B',
 
-    // Primary Action (Modern Indigo)
-    primary: '#6366F1',
-    primarySoft: 'rgba(99, 102, 241, 0.10)',
+    // Primary Action (Design-system Blue)
+    primary: '#2563EB',
+    primarySoft: '#EFF6FF',
     primaryForeground: '#FFFFFF',
 
     // Accent (Cyan / Sky)
@@ -26,7 +26,7 @@ export const colors = {
     secondaryForeground: '#FFFFFF',
 
     // Muted & Utility Tokens
-    muted: 'rgba(99, 102, 241, 0.06)',
+    muted: 'rgba(37, 99, 235, 0.06)',
     mutedForeground: '#64748B',
 
     // Feedback States
@@ -59,9 +59,9 @@ export const colors = {
     text: '#F8FAFC',
     textMuted: '#94A3B8',
 
-    // Primary Action (Bright Indigo for dark ground)
-    primary: '#818CF8',
-    primarySoft: 'rgba(129, 140, 248, 0.16)',
+    // Primary Action (Bright Blue for dark ground)
+    primary: '#60A5FA',
+    primarySoft: 'rgba(96, 165, 250, 0.16)',
     primaryForeground: '#090D16',
 
     // Accent (Electric Cyan)
