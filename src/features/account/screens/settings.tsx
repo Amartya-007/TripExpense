@@ -72,8 +72,8 @@ export default function SettingsScreen() {
       </Link>
 
       <View style={{ alignItems: 'center', paddingVertical: spacing.md }}>
-        <AppText variant="caption" tone="muted">
-          Built by <AppText variant="caption" style={{ fontWeight: '900' }}>Code with Nomi</AppText>
+        <AppText variant="caption" tone="muted" >
+          Built by <AppText variant="caption" style={{ fontWeight: '500' }}>Vishwakarma Ji</AppText>
         </AppText>
       </View>
     </Screen>
