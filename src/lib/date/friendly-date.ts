@@ -39,6 +39,15 @@ export function formatFriendlyDate(value: string): string {
   return `${date.getDate()} ${MONTH_LABELS[date.getMonth()].slice(0, 3)}${withYear}`;
 }
 
+/** Absolute range for trip cards, e.g. "12 Apr – 16 Apr 2026". Always includes the end year. */
+export function formatDateRange(startISO: string, endISO: string): string {
+  const start = parseISODate(startISO);
+  const end = parseISODate(endISO);
+  const startLabel = `${start.getDate()} ${MONTH_LABELS[start.getMonth()].slice(0, 3)}`;
+  const endLabel = `${end.getDate()} ${MONTH_LABELS[end.getMonth()].slice(0, 3)} ${end.getFullYear()}`;
+  return `${startLabel} – ${endLabel}`;
+}
+
 export function formatTime(dateTime: string): string {
   const date = new Date(dateTime);
   let hours = date.getHours();
