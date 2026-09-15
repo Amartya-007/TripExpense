@@ -78,6 +78,7 @@ export default function AddExpenseScreen() {
   const [paidBy, setPaidBy] = useState<PersonId>(existingExpense?.paidBy ?? 'you');
   const [splitBetween, setSplitBetween] = useState<PersonId[]>(existingExpense?.splitBetween ?? ALL_PEOPLE_IDS);
   const [selectedDate, setSelectedDate] = useState(existingExpense ? existingExpense.dateTime.slice(0, 10) : toISODate(new Date()));
+  const [note, setNote] = useState(existingExpense?.note ?? '');
 
   const parsedAmount = Number(amount);
   const canSubmit = title.trim().length > 0 && parsedAmount > 0 && splitBetween.length > 0;
@@ -113,6 +114,8 @@ export default function AddExpenseScreen() {
       paidBy,
       splitBetween,
       dateTime: buildDateTime(),
+      note: note.trim() || undefined,
+      hasReceipt: existingExpense?.hasReceipt,
     };
 
     if (existingExpense) {
@@ -204,6 +207,17 @@ export default function AddExpenseScreen() {
           </AppText>
         )}
       </View>
+
+      <Input
+        label="Note (optional)"
+        onChangeText={setNote}
+        placeholder="Any extra detail worth remembering"
+        value={note}
+        multiline
+        numberOfLines={3}
+        size="lg"
+        style={{ textAlignVertical: 'top', paddingTop: spacing.sm, paddingBottom: spacing.sm }}
+      />
 
       <Button
         label={isEditing ? 'Save changes' : parsedAmount > 0 ? `Add expense · ₹${parsedAmount.toLocaleString('en-IN')}` : 'Add expense'}

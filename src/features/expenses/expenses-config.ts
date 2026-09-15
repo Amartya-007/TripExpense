@@ -23,12 +23,12 @@ export const TRIP_PEOPLE: Person[] = [
 
 export type ExpenseCategory = 'food' | 'transport' | 'stay' | 'ticket' | 'other';
 
-export const EXPENSE_CATEGORIES: Record<ExpenseCategory, { label: string; icon: IconName }> = {
-  food: { label: 'Food', icon: 'food' },
-  transport: { label: 'Transport', icon: 'transport' },
-  stay: { label: 'Stay', icon: 'stay' },
-  ticket: { label: 'Activity', icon: 'ticket' },
-  other: { label: 'Other', icon: 'list' },
+export const EXPENSE_CATEGORIES: Record<ExpenseCategory, { label: string; icon: IconName; gradientFrom: string; gradientTo: string }> = {
+  food: { label: 'Food', icon: 'food', gradientFrom: '#F97316', gradientTo: '#FBBF24' },
+  transport: { label: 'Transport', icon: 'transport', gradientFrom: '#2563EB', gradientTo: '#60A5FA' },
+  stay: { label: 'Stay', icon: 'stay', gradientFrom: '#0D9488', gradientTo: '#2DD4BF' },
+  ticket: { label: 'Activity', icon: 'ticket', gradientFrom: '#DB2777', gradientTo: '#F472B6' },
+  other: { label: 'Other', icon: 'list', gradientFrom: '#64748B', gradientTo: '#94A3B8' },
 };
 
 export type Expense = {
