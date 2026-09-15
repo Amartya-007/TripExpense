@@ -5,9 +5,11 @@ import { useAppTheme } from '@/theme/theme-provider';
 const iconMap = {
   add: { ios: 'plus', android: 'add', web: 'add' },
   alert: { ios: 'exclamationmark.triangle', android: 'warning', web: 'warning' },
+  appearance: { ios: 'circle.lefthalf.filled', android: 'brightness_6', web: 'brightness_6' },
   arrowLeft: { ios: 'chevron.left', android: 'arrow_back', web: 'arrow_back' },
   arrowRight: { ios: 'arrow.right', android: 'arrow_forward', web: 'arrow_forward' },
   apple: { ios: 'apple.logo', android: 'login', web: 'login' },
+  beach: { ios: 'beach.umbrella.fill', android: 'beach_access', web: 'beach_access' },
   bell: { ios: 'bell', android: 'notifications', web: 'notifications' },
   calendar: { ios: 'calendar', android: 'calendar_today', web: 'calendar_today' },
   check: { ios: 'checkmark', android: 'check', web: 'check' },
@@ -29,11 +31,13 @@ const iconMap = {
   lock: { ios: 'lock.fill', android: 'lock', web: 'lock' },
   list: { ios: 'list.bullet', android: 'list', web: 'list' },
   mail: { ios: 'envelope.fill', android: 'mail', web: 'mail' },
+  mountain: { ios: 'mountain.2.fill', android: 'landscape', web: 'landscape' },
   person: { ios: 'person.crop.circle', android: 'account_circle', web: 'account_circle' },
   phone: { ios: 'phone.fill', android: 'phone', web: 'phone' },
   settle: { ios: 'arrow.left.arrow.right', android: 'swap_horiz', web: 'swap_horiz' },
   signOut: { ios: 'rectangle.portrait.and.arrow.right', android: 'logout', web: 'logout' },
   stay: { ios: 'bed.double.fill', android: 'hotel', web: 'hotel' },
+  storage: { ios: 'externaldrive', android: 'storage', web: 'storage' },
   ticket: { ios: 'ticket.fill', android: 'local_activity', web: 'local_activity' },
   transport: { ios: 'car.fill', android: 'directions_car', web: 'directions_car' },
   userPlus: { ios: 'person.badge.plus', android: 'person_add', web: 'person_add' },
@@ -42,6 +46,8 @@ const iconMap = {
   settings: { ios: 'gearshape', android: 'settings', web: 'settings' },
   sparkles: { ios: 'sparkles', android: 'auto_awesome', web: 'auto_awesome' },
   trash: { ios: 'trash', android: 'delete', web: 'delete' },
+  wallet: { ios: 'wallet.pass.fill', android: 'account_balance_wallet', web: 'account_balance_wallet' },
+  waves: { ios: 'water.waves', android: 'waves', web: 'waves' },
 } as const satisfies Record<string, SymbolViewProps['name']>;
 
 export type IconName = keyof typeof iconMap;

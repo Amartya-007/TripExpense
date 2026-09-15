@@ -1,18 +1,15 @@
 import { router } from 'expo-router';
 import { Stack } from 'expo-router/stack';
-import { useState } from 'react';
-import { View } from 'react-native';
 
-import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { HeaderIconButton } from '@/components/ui/header-icon-button';
 import { useAuth } from '@/features/auth/auth-provider';
 import { TripDataProvider } from '@/features/expenses/trip-data-provider';
+import { TripsListProvider } from '@/features/trips/trips-provider';
 import { useAppTheme } from '@/theme/theme-provider';
 
 export default function MainLayout() {
-  const { isSigningOut, phase, signOut } = useAuth();
-  const { colors, spacing } = useAppTheme();
-  const [confirmingSignOut, setConfirmingSignOut] = useState(false);
+  const { phase } = useAuth();
+  const { colors } = useAppTheme();
 
   function goBack() {
     if (router.canGoBack()) {
@@ -20,12 +17,7 @@ export default function MainLayout() {
       return;
     }
 
-    router.replace('/dashboard');
-  }
-
-  function handleConfirmSignOut() {
-    setConfirmingSignOut(false);
-    void signOut();
+    router.replace('/trips');
   }
 
   const backButton = () => (
@@ -33,9 +25,10 @@ export default function MainLayout() {
   );
 
   return (
-    <TripDataProvider>
+    <TripsListProvider>
+      <TripDataProvider>
       <Stack
-        initialRouteName={phase === 'ready' ? 'dashboard' : '(onboarding)'}
+        initialRouteName={phase === 'ready' ? 'trips' : '(onboarding)'}
         screenOptions={{
           headerShown: true,
           headerBackButtonDisplayMode: 'minimal',
@@ -52,51 +45,38 @@ export default function MainLayout() {
 
         <Stack.Protected guard={phase === 'ready'}>
           <Stack.Screen
-            name="dashboard"
+            name="trips"
             options={{
-              title: 'Home',
+              title: 'My Trips',
               gestureEnabled: false,
               headerLeft: () => null,
-              headerRight: () => (
-                <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.xs }}>
-                  <HeaderIconButton
-                    accessibilityLabel="Open settings"
-                    icon="settings"
-                    onPress={() => router.push('/settings')}
-                  />
-                  <HeaderIconButton
-                    accessibilityLabel="Sign out"
-                    color={colors.danger}
-                    disabled={isSigningOut}
-                    icon="signOut"
-                    onPress={() => setConfirmingSignOut(true)}
-                  />
-                </View>
-              ),
             }}
           />
-          <Stack.Screen name="settings" options={{ title: 'Settings', headerLeft: backButton }} />
+          <Stack.Screen
+            name="dashboard"
+            options={{
+              title: '',
+              gestureEnabled: true,
+              headerLeft: backButton,
+            }}
+          />
+          <Stack.Screen name="settings" options={{ title: 'Settings', gestureEnabled: false, headerLeft: () => null }} />
           <Stack.Screen name="expenses" options={{ title: 'Expenses', gestureEnabled: false, headerLeft: () => null }} />
           <Stack.Screen name="settle" options={{ title: 'Settle up', gestureEnabled: false, headerLeft: () => null }} />
-          <Stack.Screen name="expense/[id]" options={{ title: 'Expense', headerLeft: backButton }} />
+          <Stack.Screen name="expense/[id]" options={{ presentation: 'modal', headerShown: false }} />
           <Stack.Screen
             name="add-expense"
             options={{ title: 'Add expense', presentation: 'modal', headerLeft: backButton }}
+          />
+          <Stack.Screen
+            name="create-trip"
+            options={{ title: 'Create a trip', presentation: 'modal', headerLeft: backButton }}
           />
           <Stack.Screen name="delete-account" options={{ title: 'Delete account', headerLeft: backButton }} />
           <Stack.Screen name="biometric-lock" options={{ title: 'App lock', headerLeft: backButton }} />
         </Stack.Protected>
       </Stack>
-
-      <ConfirmDialog
-        visible={confirmingSignOut}
-        title="Sign out?"
-        body="You can sign back in at any time."
-        confirmLabel="Sign out"
-        tone="danger"
-        onConfirm={handleConfirmSignOut}
-        onCancel={() => setConfirmingSignOut(false)}
-      />
-    </TripDataProvider>
+      </TripDataProvider>
+    </TripsListProvider>
   );
 }

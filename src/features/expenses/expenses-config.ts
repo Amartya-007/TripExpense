@@ -23,12 +23,12 @@ export const TRIP_PEOPLE: Person[] = [
 
 export type ExpenseCategory = 'food' | 'transport' | 'stay' | 'ticket' | 'other';
 
-export const EXPENSE_CATEGORIES: Record<ExpenseCategory, { label: string; icon: IconName }> = {
-  food: { label: 'Food', icon: 'food' },
-  transport: { label: 'Transport', icon: 'transport' },
-  stay: { label: 'Stay', icon: 'stay' },
-  ticket: { label: 'Activity', icon: 'ticket' },
-  other: { label: 'Other', icon: 'list' },
+export const EXPENSE_CATEGORIES: Record<ExpenseCategory, { label: string; icon: IconName; gradientFrom: string; gradientTo: string }> = {
+  food: { label: 'Food', icon: 'food', gradientFrom: '#F97316', gradientTo: '#FBBF24' },
+  transport: { label: 'Transport', icon: 'transport', gradientFrom: '#2563EB', gradientTo: '#60A5FA' },
+  stay: { label: 'Stay', icon: 'stay', gradientFrom: '#0D9488', gradientTo: '#2DD4BF' },
+  ticket: { label: 'Activity', icon: 'ticket', gradientFrom: '#DB2777', gradientTo: '#F472B6' },
+  other: { label: 'Other', icon: 'list', gradientFrom: '#64748B', gradientTo: '#94A3B8' },
 };
 
 export type Expense = {
@@ -40,6 +40,10 @@ export type Expense = {
   splitBetween: PersonId[];
   /** ISO datetime, e.g. '2026-09-13T08:30:00'. */
   dateTime: string;
+  /** Optional free-text note, shown on the expense detail screen. */
+  note?: string;
+  /** Whether a receipt photo was attached when the expense was logged. */
+  hasReceipt?: boolean;
 };
 
 // Sums to exactly DASHBOARD_MOCK_DATA.trip.spent (32750) across exactly
@@ -49,7 +53,7 @@ export type Expense = {
 // Dates assume the trip started 2026-09-10, with today being 2026-09-13.
 export const MOCK_EXPENSES: Expense[] = [
   { id: 'e1', title: 'Flight/cab from airport', amount: 8500, category: 'transport', paidBy: 'you', splitBetween: ['you', 'priya', 'rohan', 'sneha'], dateTime: '2026-09-10T10:30:00' },
-  { id: 'e2', title: 'Hotel, night 1', amount: 4000, category: 'stay', paidBy: 'rohan', splitBetween: ['you', 'priya', 'rohan', 'sneha'], dateTime: '2026-09-10T14:00:00' },
+  { id: 'e2', title: 'Hotel, night 1', amount: 4000, category: 'stay', paidBy: 'rohan', splitBetween: ['you', 'priya', 'rohan', 'sneha'], dateTime: '2026-09-10T14:00:00', note: 'Sea-facing room with breakfast included, booked for the first two nights.', hasReceipt: true },
   { id: 'e3', title: 'Hotel, night 2', amount: 4000, category: 'stay', paidBy: 'rohan', splitBetween: ['you', 'priya', 'rohan', 'sneha'], dateTime: '2026-09-10T14:05:00' },
   { id: 'e4', title: 'Welcome dinner', amount: 2000, category: 'food', paidBy: 'sneha', splitBetween: ['you', 'priya', 'rohan', 'sneha'], dateTime: '2026-09-10T20:00:00' },
   { id: 'e5', title: 'Drinks at dinner', amount: 1200, category: 'food', paidBy: 'sneha', splitBetween: ['you', 'priya', 'rohan', 'sneha'], dateTime: '2026-09-10T20:30:00' },
@@ -65,7 +69,7 @@ export const MOCK_EXPENSES: Expense[] = [
   { id: 'e15', title: 'Scooter fuel', amount: 200, category: 'transport', paidBy: 'priya', splitBetween: ['you', 'priya', 'rohan', 'sneha'], dateTime: '2026-09-12T10:00:00' },
   { id: 'e16', title: 'Beach cafe breakfast', amount: 450, category: 'food', paidBy: 'you', splitBetween: ['you', 'priya', 'rohan', 'sneha'], dateTime: '2026-09-13T08:30:00' },
   { id: 'e17', title: 'Auto rickshaw', amount: 200, category: 'transport', paidBy: 'priya', splitBetween: ['you', 'priya', 'rohan', 'sneha'], dateTime: '2026-09-13T09:15:00' },
-  { id: 'e18', title: 'Sunset cruise tickets', amount: 2200, category: 'ticket', paidBy: 'rohan', splitBetween: ['you', 'priya', 'rohan', 'sneha'], dateTime: '2026-09-13T17:30:00' },
+  { id: 'e18', title: 'Sunset cruise tickets', amount: 2200, category: 'ticket', paidBy: 'rohan', splitBetween: ['you', 'priya', 'rohan', 'sneha'], dateTime: '2026-09-13T17:30:00', hasReceipt: true },
 ];
 
 export function getPerson(id: PersonId): Person {

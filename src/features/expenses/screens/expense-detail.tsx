@@ -1,23 +1,30 @@
 import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
-import { View } from 'react-native';
+import { Pressable, ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { AppText } from '@/components/ui/app-text';
+import { Avatar } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { FadeIn } from '@/components/ui/fade-in';
+import { GradientPanel } from '@/components/ui/gradient-panel';
+import { HeaderIconButton } from '@/components/ui/header-icon-button';
 import { Icon } from '@/components/ui/icon';
-import { Screen } from '@/components/ui/screen';
 import { EXPENSE_CATEGORIES, getExpense, getPerson } from '@/features/expenses/expenses-config';
 import { useTripData } from '@/features/expenses/trip-data-provider';
+import { TRIPS } from '@/features/trips/trips-config';
 import { formatFriendlyDate, formatTime } from '@/lib/date/friendly-date';
+import { appToast } from '@/lib/toast/app-toast';
 import { useAppTheme } from '@/theme/theme-provider';
 
 function formatCurrency(amount: number) {
   return `₹${amount.toLocaleString('en-IN')}`;
 }
+
+// Exactly one trip in TRIPS is marked isLive - see trips-config.ts.
+const liveTrip = TRIPS.find((trip) => trip.isLive) ?? TRIPS[0];
 
 export default function ExpenseDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -28,13 +35,17 @@ export default function ExpenseDetailScreen() {
 
   const expense = getExpense(expenses, id);
 
+  function handleClose() {
+    router.back();
+  }
+
   if (!expense) {
     return (
-      <Screen hasHeader contentStyle={{ paddingBottom: insets.bottom + spacing.xl, gap: spacing.lg }}>
+      <View style={{ flex: 1, backgroundColor: colors.background, paddingTop: insets.top + spacing.lg, paddingHorizontal: spacing.xl }}>
         <AppText variant="body" tone="muted">
           This expense no longer exists.
         </AppText>
-      </Screen>
+      </View>
     );
   }
 
@@ -53,99 +64,118 @@ export default function ExpenseDetailScreen() {
     router.back();
   }
 
+  function handleViewReceipt() {
+    appToast.info('Receipt photos are coming soon');
+  }
+
   return (
     <>
-      <Screen hasHeader contentStyle={{ paddingBottom: insets.bottom + spacing.xl, gap: spacing.lg }}>
-        <FadeIn style={{ gap: spacing.lg }}>
-          <View style={{ flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between' }}>
-            <View style={{ gap: spacing.xs }}>
-              <AppText variant="caption" tone="muted">
-                Amount
-              </AppText>
-              <AppText variant="hero">{formatCurrency(expense.amount)}</AppText>
-            </View>
-            <View style={{ alignItems: 'flex-end', gap: spacing.xs }}>
-              <AppText variant="caption" tone="muted">
-                {formatFriendlyDate(dateKey)}
-              </AppText>
-              <AppText variant="caption" tone="muted">
-                {formatTime(expense.dateTime)}
-              </AppText>
+      <View style={{ flex: 1, backgroundColor: colors.background }}>
+        <View style={{ paddingTop: insets.top + spacing.sm, paddingHorizontal: spacing.lg, gap: spacing.sm }}>
+          <View style={{ alignSelf: 'center', width: 40, height: 5, borderRadius: 3, backgroundColor: colors.border }} />
+          <View style={{ flexDirection: 'row', justifyContent: 'flex-end' }}>
+            <View style={{ borderRadius: radius.pill, backgroundColor: colors.surfaceStrong }}>
+              <HeaderIconButton accessibilityLabel="Close" icon="close" onPress={handleClose} />
             </View>
           </View>
+        </View>
 
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md }}>
-            <View
-              style={{
-                width: 44,
-                height: 44,
-                borderRadius: radius.md,
-                backgroundColor: colors.surfaceStrong,
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}>
-              <Icon name={category.icon} size={20} color={colors.textMuted} />
-            </View>
-            <View style={{ flex: 1 }}>
-              <AppText variant="subtitle">{expense.title}</AppText>
+        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: insets.bottom + spacing.xl, gap: spacing.lg }}>
+          <FadeIn style={{ gap: spacing.lg }}>
+            <GradientPanel from={category.gradientFrom} to={category.gradientTo} icon={category.icon} iconSize={40} height={168} />
+
+            <View style={{ paddingHorizontal: spacing.xl, gap: spacing.xs }}>
+              <AppText variant="title">{expense.title}</AppText>
+              <AppText variant="hero" tone="primary">
+                {formatCurrency(expense.amount)}
+              </AppText>
               <AppText variant="caption" tone="muted">
-                {category.label}
+                {formatFriendlyDate(dateKey)} · {formatTime(expense.dateTime)} · {liveTrip.place}
               </AppText>
             </View>
-          </View>
 
-          <Card style={{ gap: spacing.md }}>
-            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-              <AppText variant="caption" tone="muted">
-                Paid by
-              </AppText>
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.xs }}>
-                <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: colors[payer.color] }} />
-                <AppText variant="body">{payer.name}</AppText>
-              </View>
-            </View>
-
-            <View style={{ gap: spacing.sm }}>
-              <AppText variant="caption" tone="muted">
-                Split between
-              </AppText>
-              <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm }}>
-                {expense.splitBetween.map((personId) => {
-                  const person = getPerson(personId);
-                  return (
-                    <View
-                      key={personId}
-                      style={{
-                        flexDirection: 'row',
-                        alignItems: 'center',
-                        gap: spacing.xs,
-                        paddingHorizontal: spacing.md,
-                        paddingVertical: spacing.xs,
-                        borderRadius: radius.pill,
-                        backgroundColor: colors.surfaceStrong,
-                      }}>
-                      <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: colors[person.color] }} />
-                      <AppText variant="caption">{person.name}</AppText>
+            <View style={{ paddingHorizontal: spacing.xl, gap: spacing.lg }}>
+              <Card style={{ gap: spacing.md }}>
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <View style={{ gap: spacing.xs }}>
+                    <AppText variant="caption" tone="muted">
+                      Paid by
+                    </AppText>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm }}>
+                      <Avatar name={payer.name} color={colors[payer.color]} size={28} />
+                      <AppText variant="subtitle">{payer.name}</AppText>
                     </View>
-                  );
-                })}
+                  </View>
+                  {expense.hasReceipt ? (
+                    <Pressable accessibilityRole="button" accessibilityLabel="View receipt" onPress={handleViewReceipt} hitSlop={8}>
+                      <AppText variant="caption" tone="primary" style={{ fontWeight: '800' }}>
+                        View receipt
+                      </AppText>
+                    </Pressable>
+                  ) : null}
+                </View>
+              </Card>
+
+              <View style={{ gap: spacing.sm }}>
+                <AppText variant="eyebrow">Split between ({expense.splitBetween.length})</AppText>
+                <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm }}>
+                  {expense.splitBetween.map((personId) => {
+                    const person = getPerson(personId);
+                    return (
+                      <View
+                        key={personId}
+                        style={{
+                          flexBasis: '47%',
+                          flexGrow: 1,
+                          flexDirection: 'row',
+                          alignItems: 'center',
+                          gap: spacing.sm,
+                          padding: spacing.md,
+                          borderRadius: radius.lg,
+                          borderWidth: 1,
+                          borderColor: colors.border,
+                          backgroundColor: colors.surface,
+                        }}>
+                        <Avatar name={person.name} color={colors[person.color]} size={32} />
+                        <View>
+                          <AppText variant="body">{person.name}</AppText>
+                          <AppText variant="caption" tone="muted">
+                            {formatCurrency(share)}
+                          </AppText>
+                        </View>
+                      </View>
+                    );
+                  })}
+                </View>
+              </View>
+
+              <Card>
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <AppText variant="body">Category</AppText>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.xs }}>
+                    <AppText variant="body" tone="muted">
+                      {category.label}
+                    </AppText>
+                    <Icon name="chevronRight" size={16} color={colors.textMuted} />
+                  </View>
+                </View>
+              </Card>
+
+              {expense.note ? (
+                <View style={{ gap: spacing.sm }}>
+                  <AppText variant="eyebrow">Notes</AppText>
+                  <AppText tone="muted">{expense.note}</AppText>
+                </View>
+              ) : null}
+
+              <View style={{ flexDirection: 'row', gap: spacing.md }}>
+                <Button label="Edit" variant="outline" onPress={handleEdit} style={{ flex: 1 }} />
+                <Button label="Delete" variant="danger" onPress={() => setConfirmingDelete(true)} style={{ flex: 1 }} />
               </View>
             </View>
-
-            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-              <AppText variant="caption" tone="muted">
-                Per person
-              </AppText>
-              <AppText variant="body">{formatCurrency(share)} each</AppText>
-            </View>
-          </Card>
-
-          <View style={{ flexDirection: 'row', gap: spacing.md }}>
-            <Button label="Edit" variant="secondary" onPress={handleEdit} style={{ flex: 1 }} />
-            <Button label="Delete" variant="danger" onPress={() => setConfirmingDelete(true)} style={{ flex: 1 }} />
-          </View>
-        </FadeIn>
-      </Screen>
+          </FadeIn>
+        </ScrollView>
+      </View>
 
       <ConfirmDialog
         visible={confirmingDelete}
