@@ -1,6 +1,6 @@
 import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
-import { TextInput, View } from 'react-native';
+import { Pressable, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { AppText } from '@/components/ui/app-text';
@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Chip } from '@/components/ui/chip';
 import { DatePicker } from '@/components/ui/date-picker';
 import { FadeIn } from '@/components/ui/fade-in';
+import { Icon } from '@/components/ui/icon';
 import { Input } from '@/components/ui/input';
 import { Screen } from '@/components/ui/screen';
 import {
@@ -40,6 +41,7 @@ export default function AddExpenseScreen() {
   const [splitBetween, setSplitBetween] = useState<PersonId[]>(existingExpense?.splitBetween ?? ALL_PEOPLE_IDS);
   const [selectedDate, setSelectedDate] = useState(existingExpense ? existingExpense.dateTime.slice(0, 10) : toISODate(new Date()));
   const [note, setNote] = useState(existingExpense?.note ?? '');
+  const [hasReceipt, setHasReceipt] = useState(existingExpense?.hasReceipt ?? false);
 
   const parsedAmount = Number(amount);
   const canSubmit = title.trim().length > 0 && parsedAmount > 0 && splitBetween.length > 0;
@@ -76,7 +78,7 @@ export default function AddExpenseScreen() {
       splitBetween,
       dateTime: buildDateTime(),
       note: note.trim() || undefined,
-      hasReceipt: existingExpense?.hasReceipt,
+      hasReceipt,
     };
 
     if (existingExpense) {
@@ -179,6 +181,34 @@ export default function AddExpenseScreen() {
         size="lg"
         style={{ textAlignVertical: 'top', paddingTop: spacing.sm, paddingBottom: spacing.sm }}
       />
+
+      <View style={{ gap: spacing.sm }}>
+        <AppText variant="caption">Receipt</AppText>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityState={{ checked: hasReceipt }}
+          onPress={() => setHasReceipt((current) => !current)}
+          style={({ pressed }) => ({
+            flexDirection: 'row',
+            alignItems: 'center',
+            gap: spacing.md,
+            padding: spacing.lg,
+            borderRadius: 16,
+            borderWidth: 1,
+            borderStyle: hasReceipt ? 'solid' : 'dashed',
+            borderColor: hasReceipt ? colors.success : colors.border,
+            backgroundColor: hasReceipt ? colors.successSoft : colors.surface,
+            opacity: pressed ? 0.85 : 1,
+          })}>
+          <Icon name={hasReceipt ? 'checkCircle' : 'add'} size={18} color={hasReceipt ? colors.success : colors.textMuted} />
+          <View style={{ flex: 1 }}>
+            <AppText variant="body">{hasReceipt ? 'Receipt attached' : 'Attach a receipt'}</AppText>
+            <AppText variant="caption" tone="muted">
+              {hasReceipt ? 'Tap to remove' : 'Photo capture is coming soon - for now this just marks it attached'}
+            </AppText>
+          </View>
+        </Pressable>
+      </View>
 
       <Button
         label={isEditing ? 'Save changes' : parsedAmount > 0 ? `Add expense · ₹${parsedAmount.toLocaleString('en-IN')}` : 'Add expense'}
