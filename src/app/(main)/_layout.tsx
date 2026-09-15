@@ -4,6 +4,7 @@ import { Stack } from 'expo-router/stack';
 import { HeaderIconButton } from '@/components/ui/header-icon-button';
 import { useAuth } from '@/features/auth/auth-provider';
 import { TripDataProvider } from '@/features/expenses/trip-data-provider';
+import { AndroidBackGuard } from '@/features/home/components/android-back-guard';
 import { TripsListProvider } from '@/features/trips/trips-provider';
 import { useAppTheme } from '@/theme/theme-provider';
 
@@ -58,6 +59,7 @@ export default function MainLayout() {
           <Stack.Screen name="biometric-lock" options={{ title: 'App lock', headerLeft: backButton }} />
         </Stack.Protected>
       </Stack>
+      {phase === 'ready' ? <AndroidBackGuard /> : null}
       </TripDataProvider>
     </TripsListProvider>
   );
