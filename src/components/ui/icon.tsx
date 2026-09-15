@@ -46,6 +46,7 @@ const iconMap = {
   settings: { ios: 'gearshape', android: 'settings', web: 'settings' },
   sparkles: { ios: 'sparkles', android: 'auto_awesome', web: 'auto_awesome' },
   trash: { ios: 'trash', android: 'delete', web: 'delete' },
+  wallet: { ios: 'wallet.pass.fill', android: 'account_balance_wallet', web: 'account_balance_wallet' },
   waves: { ios: 'water.waves', android: 'waves', web: 'waves' },
 } as const satisfies Record<string, SymbolViewProps['name']>;
 

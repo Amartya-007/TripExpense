@@ -16,7 +16,8 @@ import { TRIP_PEOPLE, getPerson } from '@/features/expenses/expenses-config';
 import { useTripData } from '@/features/expenses/trip-data-provider';
 import { BottomNav } from '@/features/home/components/bottom-nav';
 import { useDashboardNavigation } from '@/features/home/use-dashboard-navigation';
-import { TRIPS, type TripSummary } from '@/features/trips/trips-config';
+import { useTripsList } from '@/features/trips/trips-provider';
+import { type TripSummary } from '@/features/trips/trips-config';
 import { formatDateRange, toISODate } from '@/lib/date/friendly-date';
 import { appToast } from '@/lib/toast/app-toast';
 import { useAppTheme } from '@/theme/theme-provider';
@@ -38,6 +39,7 @@ export default function MyTripsScreen() {
   const { colors, radius, spacing } = useAppTheme();
   const insets = useSafeAreaInsets();
   const { expenses } = useTripData();
+  const { trips: allTrips } = useTripsList();
   const { handleNavigate, handleAdd } = useDashboardNavigation('home');
   const [query, setQuery] = useState('');
   const [tab, setTab] = useState<TripTab>('upcoming');
@@ -49,14 +51,14 @@ export default function MyTripsScreen() {
   const trips = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase();
 
-    return TRIPS.filter((trip) => {
+    return allTrips.filter((trip) => {
       const isPast = trip.endDate < todayKey;
       if (tab === 'upcoming' && isPast) return false;
       if (tab === 'past' && !isPast) return false;
       if (!normalizedQuery) return true;
       return trip.name.toLowerCase().includes(normalizedQuery) || trip.place.toLowerCase().includes(normalizedQuery);
     });
-  }, [query, tab, todayKey]);
+  }, [allTrips, query, tab, todayKey]);
 
   function handleOpenTrip(trip: TripSummary) {
     if (!trip.isLive) {
@@ -66,7 +68,7 @@ export default function MyTripsScreen() {
   }
 
   function handleCreateTrip() {
-    appToast.info('Trip creation is coming soon', { description: 'For now, explore the Goa trip from My Trips.' });
+    router.push('/create-trip');
   }
 
   return (

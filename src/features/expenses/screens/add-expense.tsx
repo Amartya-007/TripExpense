@@ -1,10 +1,11 @@
 import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
-import { Pressable, TextInput, View } from 'react-native';
+import { TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { AppText } from '@/components/ui/app-text';
 import { Button } from '@/components/ui/button';
+import { Chip } from '@/components/ui/chip';
 import { DatePicker } from '@/components/ui/date-picker';
 import { FadeIn } from '@/components/ui/fade-in';
 import { Input } from '@/components/ui/input';
@@ -22,46 +23,6 @@ import { useAppTheme } from '@/theme/theme-provider';
 
 const CATEGORY_KEYS = Object.keys(EXPENSE_CATEGORIES) as ExpenseCategory[];
 const ALL_PEOPLE_IDS = TRIP_PEOPLE.map((person) => person.id);
-
-function Chip({
-  label,
-  selected,
-  onPress,
-  color,
-}: {
-  label: string;
-  selected: boolean;
-  onPress: () => void;
-  color?: string;
-}) {
-  const { colors, radius, spacing } = useAppTheme();
-  const activeColor = color ?? colors.primary;
-
-  return (
-    <Pressable
-      accessibilityRole="button"
-      accessibilityState={{ selected }}
-      onPress={onPress}
-      style={({ pressed }) => [
-        {
-          flexDirection: 'row',
-          alignItems: 'center',
-          gap: spacing.xs,
-          paddingHorizontal: spacing.md,
-          paddingVertical: spacing.sm,
-          borderRadius: radius.pill,
-          borderWidth: 1,
-          borderColor: selected ? activeColor : colors.border,
-          backgroundColor: selected ? `${activeColor}1A` : colors.surface,
-          opacity: pressed ? 0.78 : 1,
-        },
-      ]}>
-      <AppText variant="caption" style={{ color: selected ? activeColor : colors.textMuted }}>
-        {label}
-      </AppText>
-    </Pressable>
-  );
-}
 
 export default function AddExpenseScreen() {
   const { id } = useLocalSearchParams<{ id?: string }>();

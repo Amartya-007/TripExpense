@@ -4,6 +4,7 @@ import { Stack } from 'expo-router/stack';
 import { HeaderIconButton } from '@/components/ui/header-icon-button';
 import { useAuth } from '@/features/auth/auth-provider';
 import { TripDataProvider } from '@/features/expenses/trip-data-provider';
+import { TripsListProvider } from '@/features/trips/trips-provider';
 import { useAppTheme } from '@/theme/theme-provider';
 
 export default function MainLayout() {
@@ -24,7 +25,8 @@ export default function MainLayout() {
   );
 
   return (
-    <TripDataProvider>
+    <TripsListProvider>
+      <TripDataProvider>
       <Stack
         initialRouteName={phase === 'ready' ? 'trips' : '(onboarding)'}
         screenOptions={{
@@ -66,10 +68,15 @@ export default function MainLayout() {
             name="add-expense"
             options={{ title: 'Add expense', presentation: 'modal', headerLeft: backButton }}
           />
+          <Stack.Screen
+            name="create-trip"
+            options={{ title: 'Create a trip', presentation: 'modal', headerLeft: backButton }}
+          />
           <Stack.Screen name="delete-account" options={{ title: 'Delete account', headerLeft: backButton }} />
           <Stack.Screen name="biometric-lock" options={{ title: 'App lock', headerLeft: backButton }} />
         </Stack.Protected>
       </Stack>
-    </TripDataProvider>
+      </TripDataProvider>
+    </TripsListProvider>
   );
 }
