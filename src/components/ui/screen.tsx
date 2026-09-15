@@ -1,4 +1,4 @@
-import { ScrollView, View, type StyleProp, type ViewStyle } from 'react-native';
+import { RefreshControl, ScrollView, View, type StyleProp, type ViewStyle } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useAppTheme } from '@/theme/theme-provider';
@@ -8,9 +8,12 @@ type ScreenProps = {
   contentStyle?: StyleProp<ViewStyle>;
   hasHeader?: boolean;
   scroll?: boolean;
+  /** Pass both to enable pull-to-refresh; omit either to leave it off. */
+  onRefresh?: () => void | Promise<void>;
+  refreshing?: boolean;
 };
 
-export function Screen({ children, contentStyle, hasHeader = false, scroll = true }: ScreenProps) {
+export function Screen({ children, contentStyle, hasHeader = false, scroll = true, onRefresh, refreshing = false }: ScreenProps) {
   const { colors, spacing } = useAppTheme();
   const insets = useSafeAreaInsets();
   const baseContentStyle = [
@@ -31,7 +34,10 @@ export function Screen({ children, contentStyle, hasHeader = false, scroll = tru
           contentInsetAdjustmentBehavior="automatic"
           showsVerticalScrollIndicator={false}
           style={{ flex: 1 }}
-          contentContainerStyle={baseContentStyle}>
+          contentContainerStyle={baseContentStyle}
+          refreshControl={
+            onRefresh ? <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} colors={[colors.primary]} /> : undefined
+          }>
           {children}
         </ScrollView>
       ) : (

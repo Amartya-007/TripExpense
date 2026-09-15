@@ -1,4 +1,5 @@
 import { router } from 'expo-router';
+import { useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -9,12 +10,13 @@ import { Icon } from '@/components/ui/icon';
 import { Screen } from '@/components/ui/screen';
 import { ExpenseRow } from '@/features/expenses/components/expense-row';
 import { useTripData } from '@/features/expenses/trip-data-provider';
-import { BottomNav } from '@/features/home/components/bottom-nav';
 import { CategoryBreakdown } from '@/features/home/components/category-breakdown';
 import { DASHBOARD_MOCK_DATA } from '@/features/home/dashboard-config';
-import { useDashboardNavigation } from '@/features/home/use-dashboard-navigation';
+import { calculateTripStats } from '@/features/home/trip-stats';
+import { TripSwitcherSheet } from '@/features/trips/components/trip-switcher-sheet';
 import { TRIPS } from '@/features/trips/trips-config';
-import { formatDateRange, toISODate } from '@/lib/date/friendly-date';
+import { formatDateRange } from '@/lib/date/friendly-date';
+import { useMockRefresh } from '@/lib/hooks/use-mock-refresh';
 import { useAppTheme } from '@/theme/theme-provider';
 
 function formatCurrency(amount: number) {
@@ -27,31 +29,33 @@ const liveTrip = TRIPS.find((trip) => trip.isLive) ?? TRIPS[0];
 export default function DashboardScreen() {
   const { colors, radius, spacing } = useAppTheme();
   const insets = useSafeAreaInsets();
-  const { trip: tripConfig, today: todayConfig } = DASHBOARD_MOCK_DATA;
-  const { handleNavigate, handleAdd } = useDashboardNavigation('home');
+  const { trip: tripConfig } = DASHBOARD_MOCK_DATA;
   const { expenses } = useTripData();
+  const { refreshing, onRefresh } = useMockRefresh();
+  const [switcherOpen, setSwitcherOpen] = useState(false);
 
-  const spent = expenses.reduce((sum, expense) => sum + expense.amount, 0);
-  const todayKey = toISODate(new Date());
-  const todaySpent = expenses.filter((expense) => expense.dateTime.startsWith(todayKey)).reduce((sum, expense) => sum + expense.amount, 0);
-  const trip = { ...tripConfig, spent, expenses: expenses.length };
-  const today = { ...todayConfig, spent: todaySpent, burnRate: Math.round((todaySpent / todayConfig.limit) * 100) };
-
+  const stats = calculateTripStats({ budget: liveTrip.budget, startDate: liveTrip.startDate, endDate: liveTrip.endDate, expenses });
+  const trip = { ...tripConfig, spent: stats.totalSpent, expenses: expenses.length, budget: liveTrip.budget };
   const spentPercent = Math.min(100, Math.round((trip.spent / trip.budget) * 100));
-  const remaining = trip.budget - trip.spent;
-  const burnPercent = Math.min(100, today.burnRate);
-  const isOverLimit = today.spent > today.limit;
-  const yesterdayDelta = Math.round(((today.spent - today.yesterday) / today.yesterday) * 100);
   const recentExpenses = [...expenses].sort((a, b) => b.dateTime.localeCompare(a.dateTime)).slice(0, 3);
+  const statusColor = stats.statusTone === 'danger' ? colors.danger : stats.statusTone === 'warning' ? colors.warning : colors.success;
+  const yesterdayDelta = stats.yesterdaySpent > 0 ? Math.round(((stats.todaySpent - stats.yesterdaySpent) / stats.yesterdaySpent) * 100) : 0;
 
   return (
     <>
-      <Screen hasHeader contentStyle={{ paddingBottom: insets.bottom + 112 }}>
+      <Screen hasHeader contentStyle={{ paddingBottom: insets.bottom + 112 }} onRefresh={onRefresh} refreshing={refreshing}>
         <FadeIn style={{ gap: spacing.lg }}>
-        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Switch trip"
+          onPress={() => setSwitcherOpen(true)}
+          style={({ pressed }) => ({ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', opacity: pressed ? 0.8 : 1 })}>
           <View style={{ gap: spacing.xs }}>
             <AppText variant="eyebrow">{liveTrip.place}</AppText>
-            <AppText variant="hero">{trip.name}</AppText>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.xs }}>
+              <AppText variant="hero">{trip.name}</AppText>
+              <Icon name="chevronDown" size={20} color={colors.textMuted} />
+            </View>
             <AppText variant="caption" tone="muted">
               {formatDateRange(liveTrip.startDate, liveTrip.endDate)}
             </AppText>
@@ -71,32 +75,43 @@ export default function DashboardScreen() {
               {trip.people}
             </AppText>
           </View>
-        </View>
+        </Pressable>
+
+        {stats.isOverspending ? (
+          <Card style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md, backgroundColor: colors.dangerSoft, borderColor: colors.danger }}>
+            <Icon name="alert" size={20} color={colors.danger} />
+            <View style={{ flex: 1 }}>
+              <AppText variant="body" style={{ color: colors.danger, fontWeight: '800' }}>
+                Budget alert
+              </AppText>
+              <AppText variant="caption" style={{ color: colors.danger }}>
+                {stats.projectedDeficit > 0
+                  ? `At this pace, you may overshoot by ${formatCurrency(Math.round(stats.projectedDeficit))}.`
+                  : "You're spending faster than your budget allows for the days left."}
+              </AppText>
+            </View>
+          </Card>
+        ) : null}
 
         <Card>
           <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
             <AppText variant="eyebrow">Trip budget</AppText>
             <AppText variant="caption" tone="muted">
-              {trip.daysLeft} days left
+              {stats.daysRemaining} days left
             </AppText>
           </View>
 
           <View style={{ flexDirection: 'row', alignItems: 'flex-end', gap: spacing.xs }}>
-            <AppText variant="hero">{formatCurrency(trip.spent)}</AppText>
+            <AppText variant="hero" style={{ color: statusColor }}>
+              {formatCurrency(stats.remainingBalance)}
+            </AppText>
             <AppText tone="muted" style={{ paddingBottom: 6 }}>
-              of {formatCurrency(trip.budget)}
+              left of {formatCurrency(trip.budget)}
             </AppText>
           </View>
 
           <View style={{ height: 10, borderRadius: radius.pill, backgroundColor: colors.surfaceStrong, overflow: 'hidden' }}>
-            <View
-              style={{
-                width: `${spentPercent}%`,
-                height: '100%',
-                borderRadius: radius.pill,
-                backgroundColor: spentPercent >= 90 ? colors.danger : colors.primary,
-              }}
-            />
+            <View style={{ width: `${spentPercent}%`, height: '100%', borderRadius: radius.pill, backgroundColor: statusColor }} />
           </View>
 
           <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
@@ -104,7 +119,7 @@ export default function DashboardScreen() {
               {spentPercent}% used
             </AppText>
             <AppText variant="caption" tone="muted">
-              {formatCurrency(remaining)} left
+              {formatCurrency(trip.spent)} spent
             </AppText>
           </View>
         </Card>
@@ -126,7 +141,7 @@ export default function DashboardScreen() {
           </Card>
           <Card style={{ flex: 1, alignItems: 'center', gap: spacing.xs }}>
             <Icon name="clock" size={18} color={colors.primary} />
-            <AppText variant="title">{trip.daysLeft}</AppText>
+            <AppText variant="title">{stats.daysRemaining}</AppText>
             <AppText variant="caption" tone="muted">
               Days left
             </AppText>
@@ -155,47 +170,39 @@ export default function DashboardScreen() {
           ))}
         </Card>
 
-        <Card>
-          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-            <AppText variant="eyebrow">Today</AppText>
-            <View
-              style={{
-                borderRadius: radius.pill,
-                paddingHorizontal: spacing.sm,
-                paddingVertical: spacing.xs,
-                backgroundColor: isOverLimit ? colors.dangerSoft : colors.successSoft,
-              }}>
-              <AppText variant="caption" style={{ color: isOverLimit ? colors.danger : colors.success }}>
-                {isOverLimit ? 'Over daily limit' : 'On track'}
+        <Card style={{ backgroundColor: colors.primary, borderColor: colors.primary }}>
+          <AppText variant="eyebrow" style={{ color: colors.primaryForeground, opacity: 0.75 }}>
+            Today&apos;s limit
+          </AppText>
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+            <View>
+              <AppText variant="caption" style={{ color: colors.primaryForeground, opacity: 0.75 }}>
+                Safe to spend today
+              </AppText>
+              <AppText variant="hero" style={{ color: colors.primaryForeground }}>
+                {formatCurrency(Math.max(0, Math.round(stats.remainingPerDay)))}
+              </AppText>
+            </View>
+            <View style={{ alignItems: 'flex-end' }}>
+              <AppText variant="caption" style={{ color: colors.primaryForeground, opacity: 0.75 }}>
+                Burn rate/day
+              </AppText>
+              <AppText variant="subtitle" style={{ color: colors.primaryForeground }}>
+                {formatCurrency(Math.round(stats.dailyBurnRate))}
               </AppText>
             </View>
           </View>
-
-          <AppText variant="hero">{formatCurrency(today.spent)}</AppText>
-
-          <AppText variant="caption" tone="muted">
-            {yesterdayDelta <= 0 ? `${Math.abs(yesterdayDelta)}% less` : `${yesterdayDelta}% more`} than yesterday (
-            {formatCurrency(today.yesterday)})
-          </AppText>
-
-          <View style={{ height: 10, borderRadius: radius.pill, backgroundColor: colors.surfaceStrong, overflow: 'hidden' }}>
-            <View
-              style={{
-                width: `${burnPercent}%`,
-                height: '100%',
-                borderRadius: radius.pill,
-                backgroundColor: isOverLimit ? colors.danger : colors.success,
-              }}
-            />
-          </View>
-
-          <AppText variant="caption" tone="muted">
-            {today.burnRate}% of today’s {formatCurrency(today.limit)} limit used
+          <AppText variant="caption" style={{ color: colors.primaryForeground, opacity: 0.75 }}>
+            Today: {formatCurrency(stats.todaySpent)}
+            {stats.yesterdaySpent > 0
+              ? ` · ${yesterdayDelta <= 0 ? `${Math.abs(yesterdayDelta)}% less` : `${yesterdayDelta}% more`} than yesterday`
+              : ''}
           </AppText>
         </Card>
         </FadeIn>
       </Screen>
-      <BottomNav activeKey="home" onNavigate={handleNavigate} onAdd={handleAdd} />
+
+      <TripSwitcherSheet visible={switcherOpen} onClose={() => setSwitcherOpen(false)} activeTripId={liveTrip.id} />
     </>
   );
 }
