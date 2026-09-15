@@ -1,4 +1,5 @@
-import { View } from 'react-native';
+import { router } from 'expo-router';
+import { Pressable, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { AppText } from '@/components/ui/app-text';
@@ -6,8 +7,10 @@ import { Card } from '@/components/ui/card';
 import { FadeIn } from '@/components/ui/fade-in';
 import { Icon } from '@/components/ui/icon';
 import { Screen } from '@/components/ui/screen';
+import { ExpenseRow } from '@/features/expenses/components/expense-row';
 import { useTripData } from '@/features/expenses/trip-data-provider';
 import { BottomNav } from '@/features/home/components/bottom-nav';
+import { CategoryBreakdown } from '@/features/home/components/category-breakdown';
 import { DASHBOARD_MOCK_DATA } from '@/features/home/dashboard-config';
 import { useDashboardNavigation } from '@/features/home/use-dashboard-navigation';
 import { TRIPS } from '@/features/trips/trips-config';
@@ -39,6 +42,7 @@ export default function DashboardScreen() {
   const burnPercent = Math.min(100, today.burnRate);
   const isOverLimit = today.spent > today.limit;
   const yesterdayDelta = Math.round(((today.spent - today.yesterday) / today.yesterday) * 100);
+  const recentExpenses = [...expenses].sort((a, b) => b.dateTime.localeCompare(a.dateTime)).slice(0, 3);
 
   return (
     <>
@@ -128,6 +132,28 @@ export default function DashboardScreen() {
             </AppText>
           </Card>
         </View>
+
+        <Card>
+          <AppText variant="eyebrow">Spending by category</AppText>
+          <CategoryBreakdown expenses={expenses} />
+        </Card>
+
+        <Card style={{ gap: 0 }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: spacing.xs }}>
+            <AppText variant="eyebrow">Recent activity</AppText>
+            <Pressable accessibilityRole="button" accessibilityLabel="See all expenses" onPress={() => router.push('/expenses')} hitSlop={8}>
+              <AppText variant="caption" tone="primary" style={{ fontWeight: '800' }}>
+                See all
+              </AppText>
+            </Pressable>
+          </View>
+          {recentExpenses.map((expense, index) => (
+            <View key={expense.id}>
+              <ExpenseRow expense={expense} />
+              {index < recentExpenses.length - 1 ? <View style={{ height: StyleSheet.hairlineWidth, backgroundColor: colors.border }} /> : null}
+            </View>
+          ))}
+        </Card>
 
         <Card>
           <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
