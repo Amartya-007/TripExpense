@@ -16,6 +16,7 @@ const iconMap = {
   checkCircle: { ios: 'checkmark.circle.fill', android: 'check_circle', web: 'check_circle' },
   chevronLeft: { ios: 'chevron.left', android: 'chevron_left', web: 'chevron_left' },
   chevronRight: { ios: 'chevron.right', android: 'chevron_right', web: 'chevron_right' },
+  chevronDown: { ios: 'chevron.down', android: 'expand_more', web: 'expand_more' },
   close: { ios: 'xmark', android: 'close', web: 'close' },
   components: { ios: 'square.grid.2x2', android: 'dashboard', web: 'dashboard' },
   copy: { ios: 'doc.on.doc', android: 'content_copy', web: 'content_copy' },

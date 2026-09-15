@@ -4,6 +4,7 @@ import { Stack } from 'expo-router/stack';
 import { HeaderIconButton } from '@/components/ui/header-icon-button';
 import { useAuth } from '@/features/auth/auth-provider';
 import { TripDataProvider } from '@/features/expenses/trip-data-provider';
+import { AndroidBackGuard } from '@/features/home/components/android-back-guard';
 import { TripsListProvider } from '@/features/trips/trips-provider';
 import { useAppTheme } from '@/theme/theme-provider';
 
@@ -17,7 +18,7 @@ export default function MainLayout() {
       return;
     }
 
-    router.replace('/trips');
+    router.replace('/dashboard');
   }
 
   const backButton = () => (
@@ -28,7 +29,7 @@ export default function MainLayout() {
     <TripsListProvider>
       <TripDataProvider>
       <Stack
-        initialRouteName={phase === 'ready' ? 'trips' : '(onboarding)'}
+        initialRouteName={phase === 'ready' ? '(tabs)' : '(onboarding)'}
         screenOptions={{
           headerShown: true,
           headerBackButtonDisplayMode: 'minimal',
@@ -44,26 +45,8 @@ export default function MainLayout() {
         </Stack.Protected>
 
         <Stack.Protected guard={phase === 'ready'}>
-          <Stack.Screen
-            name="trips"
-            options={{
-              title: 'My Trips',
-              gestureEnabled: false,
-              headerLeft: () => null,
-            }}
-          />
-          <Stack.Screen
-            name="dashboard"
-            options={{
-              title: '',
-              gestureEnabled: true,
-              headerLeft: backButton,
-            }}
-          />
-          <Stack.Screen name="settings" options={{ title: 'Settings', gestureEnabled: false, headerLeft: () => null }} />
-          <Stack.Screen name="expenses" options={{ title: 'Expenses', gestureEnabled: false, headerLeft: () => null }} />
-          <Stack.Screen name="settle" options={{ title: 'Settle up', gestureEnabled: false, headerLeft: () => null }} />
-          <Stack.Screen name="expense/[id]" options={{ presentation: 'modal', headerShown: false }} />
+          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+          <Stack.Screen name="expense/[id]" options={{ title: '', headerLeft: backButton }} />
           <Stack.Screen
             name="add-expense"
             options={{ title: 'Add expense', presentation: 'modal', headerLeft: backButton }}
@@ -76,6 +59,7 @@ export default function MainLayout() {
           <Stack.Screen name="biometric-lock" options={{ title: 'App lock', headerLeft: backButton }} />
         </Stack.Protected>
       </Stack>
+      {phase === 'ready' ? <AndroidBackGuard /> : null}
       </TripDataProvider>
     </TripsListProvider>
   );

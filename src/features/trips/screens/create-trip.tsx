@@ -64,7 +64,7 @@ export default function CreateTripScreen() {
       icon: cover.icon,
     });
 
-    appToast.info('Trip created', { description: `${trip.name} was added to My Trips.` });
+    appToast.info('Trip created', { description: `${trip.name} was added - switch to it anytime from the trip name on your dashboard.` });
     router.back();
   }
 
