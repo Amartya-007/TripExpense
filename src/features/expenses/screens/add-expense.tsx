@@ -10,10 +10,13 @@ import { DatePicker } from '@/components/ui/date-picker';
 import { FadeIn } from '@/components/ui/fade-in';
 import { Icon } from '@/components/ui/icon';
 import { Input } from '@/components/ui/input';
+import { PickerField } from '@/components/ui/picker-field';
 import { Screen } from '@/components/ui/screen';
+import { PeoplePickerSheet } from '@/features/expenses/components/people-picker-sheet';
 import {
   EXPENSE_CATEGORIES,
   getExpense,
+  getPerson,
   TRIP_PEOPLE,
   type ExpenseCategory,
   type PersonId,
@@ -24,6 +27,13 @@ import { useAppTheme } from '@/theme/theme-provider';
 
 const CATEGORY_KEYS = Object.keys(EXPENSE_CATEGORIES) as ExpenseCategory[];
 const ALL_PEOPLE_IDS = TRIP_PEOPLE.map((person) => person.id);
+
+function splitSummary(splitBetween: PersonId[]): string {
+  if (splitBetween.length === 0) return 'No one selected';
+  if (splitBetween.length === ALL_PEOPLE_IDS.length) return 'Everyone';
+  if (splitBetween.length === 1) return getPerson(splitBetween[0]).name;
+  return `${splitBetween.length} people`;
+}
 
 export default function AddExpenseScreen() {
   const { id } = useLocalSearchParams<{ id?: string }>();
@@ -42,20 +52,10 @@ export default function AddExpenseScreen() {
   const [selectedDate, setSelectedDate] = useState(existingExpense ? existingExpense.dateTime.slice(0, 10) : toISODate(new Date()));
   const [note, setNote] = useState(existingExpense?.note ?? '');
   const [hasReceipt, setHasReceipt] = useState(existingExpense?.hasReceipt ?? false);
+  const [openPicker, setOpenPicker] = useState<'paidBy' | 'split' | null>(null);
 
   const parsedAmount = Number(amount);
   const canSubmit = title.trim().length > 0 && parsedAmount > 0 && splitBetween.length > 0;
-  const allSelected = splitBetween.length === ALL_PEOPLE_IDS.length;
-
-  function toggleSplit(personId: PersonId) {
-    setSplitBetween((current) =>
-      current.includes(personId) ? current.filter((candidate) => candidate !== personId) : [...current, personId],
-    );
-  }
-
-  function toggleAll() {
-    setSplitBetween((current) => (current.length === ALL_PEOPLE_IDS.length ? [] : [...ALL_PEOPLE_IDS]));
-  }
 
   function buildDateTime(): string {
     if (existingExpense && existingExpense.dateTime.slice(0, 10) === selectedDate) {
@@ -91,7 +91,8 @@ export default function AddExpenseScreen() {
   }
 
   return (
-    <Screen hasHeader contentStyle={{ paddingBottom: insets.bottom + spacing.xl }}>
+    <>
+      <Screen contentStyle={{ paddingBottom: insets.bottom + spacing.xl }}>
       <FadeIn style={{ gap: spacing.xl }}>
       <View style={{ alignItems: 'center', gap: spacing.xs, paddingTop: spacing.md }}>
         <AppText variant="caption" tone="muted">
@@ -129,35 +130,10 @@ export default function AddExpenseScreen() {
         </View>
       </View>
 
-      <View style={{ gap: spacing.sm }}>
-        <AppText variant="caption">Paid by</AppText>
-        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm }}>
-          {TRIP_PEOPLE.map((person) => (
-            <Chip
-              key={person.id}
-              label={person.name}
-              selected={paidBy === person.id}
-              onPress={() => setPaidBy(person.id)}
-              color={colors[person.color]}
-            />
-          ))}
-        </View>
-      </View>
+      <PickerField label="Paid by" value={getPerson(paidBy).name} onPress={() => setOpenPicker('paidBy')} />
 
       <View style={{ gap: spacing.sm }}>
-        <AppText variant="caption">Split between</AppText>
-        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm }}>
-          <Chip label="All" selected={allSelected} onPress={toggleAll} />
-          {TRIP_PEOPLE.map((person) => (
-            <Chip
-              key={person.id}
-              label={person.name}
-              selected={splitBetween.includes(person.id)}
-              onPress={() => toggleSplit(person.id)}
-              color={colors[person.color]}
-            />
-          ))}
-        </View>
+        <PickerField label="Split between" value={splitSummary(splitBetween)} onPress={() => setOpenPicker('split')} />
         {splitBetween.length > 0 ? (
           <AppText variant="caption" tone="muted">
             {parsedAmount > 0
@@ -217,5 +193,27 @@ export default function AddExpenseScreen() {
       />
       </FadeIn>
     </Screen>
+
+      <PeoplePickerSheet
+        visible={openPicker === 'paidBy'}
+        onClose={() => setOpenPicker(null)}
+        mode="single"
+        title="Paid by"
+        subtitle="Pick who paid this expense"
+        selected={[paidBy]}
+        onChange={(ids) => ids[0] && setPaidBy(ids[0])}
+      />
+
+      <PeoplePickerSheet
+        visible={openPicker === 'split'}
+        onClose={() => setOpenPicker(null)}
+        mode="multiple"
+        title="Split between"
+        subtitle={`${splitBetween.length} of ${ALL_PEOPLE_IDS.length} selected`}
+        selected={splitBetween}
+        onChange={setSplitBetween}
+        payerId={paidBy}
+      />
+    </>
   );
 }
