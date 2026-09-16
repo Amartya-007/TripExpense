@@ -47,8 +47,10 @@ export default function SettingsScreen() {
 
   return (
     <>
-      <Screen hasHeader>
+      <Screen>
         <FadeIn style={{ gap: spacing.lg }}>
+          <AppText variant="hero">Settings</AppText>
+
           <Card style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md }}>
             <Avatar name={user?.name ?? 'You'} color={colors.primary} size={56} />
             <View style={{ flex: 1, gap: 2 }}>

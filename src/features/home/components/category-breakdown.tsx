@@ -5,8 +5,8 @@ import { AppText } from '@/components/ui/app-text';
 import { EXPENSE_CATEGORIES, type Expense, type ExpenseCategory } from '@/features/expenses/expenses-config';
 import { useAppTheme } from '@/theme/theme-provider';
 
-const SIZE = 120;
-const STROKE_WIDTH = 18;
+const SIZE = 104;
+const STROKE_WIDTH = 16;
 const RADIUS = (SIZE - STROKE_WIDTH) / 2;
 const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
 
@@ -67,14 +67,16 @@ export function CategoryBreakdown({ expenses }: { expenses: Expense[] }) {
         </G>
       </Svg>
 
-      <View style={{ flex: 1, gap: spacing.sm }}>
+      <View style={{ flex: 1, gap: spacing.sm, minWidth: 0 }}>
         {segments.map((segment) => (
-          <View key={segment.category} style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm }}>
-              <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: EXPENSE_CATEGORIES[segment.category].gradientFrom }} />
-              <AppText variant="caption">{EXPENSE_CATEGORIES[segment.category].label}</AppText>
+          <View key={segment.category} style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: spacing.sm }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm, flexShrink: 1, minWidth: 0 }}>
+              <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: EXPENSE_CATEGORIES[segment.category].gradientFrom, flexShrink: 0 }} />
+              <AppText variant="caption" numberOfLines={1} style={{ flexShrink: 1 }}>
+                {EXPENSE_CATEGORIES[segment.category].label}
+              </AppText>
             </View>
-            <AppText variant="caption" tone="muted">
+            <AppText variant="caption" tone="muted" numberOfLines={1} style={{ flexShrink: 0 }}>
               {Math.round(segment.percent)}% · {formatCurrency(segment.amount)}
             </AppText>
           </View>

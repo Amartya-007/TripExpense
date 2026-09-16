@@ -1,7 +1,6 @@
 import { router } from 'expo-router';
 import { useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { AppText } from '@/components/ui/app-text';
 import { Card } from '@/components/ui/card';
@@ -28,7 +27,6 @@ const liveTrip = TRIPS.find((trip) => trip.isLive) ?? TRIPS[0];
 
 export default function DashboardScreen() {
   const { colors, radius, spacing } = useAppTheme();
-  const insets = useSafeAreaInsets();
   const { trip: tripConfig } = DASHBOARD_MOCK_DATA;
   const { expenses } = useTripData();
   const { refreshing, onRefresh } = useMockRefresh();
@@ -43,7 +41,7 @@ export default function DashboardScreen() {
 
   return (
     <>
-      <Screen hasHeader contentStyle={{ paddingBottom: insets.bottom + 112 }} onRefresh={onRefresh} refreshing={refreshing}>
+      <Screen contentStyle={{ paddingBottom: spacing.xl }} onRefresh={onRefresh} refreshing={refreshing}>
         <FadeIn style={{ gap: spacing.lg }}>
         <Pressable
           accessibilityRole="button"
@@ -94,12 +92,7 @@ export default function DashboardScreen() {
         ) : null}
 
         <Card>
-          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-            <AppText variant="eyebrow">Trip budget</AppText>
-            <AppText variant="caption" tone="muted">
-              {stats.daysRemaining} days left
-            </AppText>
-          </View>
+          <AppText variant="eyebrow">Trip budget</AppText>
 
           <View style={{ flexDirection: 'row', alignItems: 'flex-end', gap: spacing.xs }}>
             <AppText variant="hero" style={{ color: statusColor }}>
@@ -122,31 +115,35 @@ export default function DashboardScreen() {
               {formatCurrency(trip.spent)} spent
             </AppText>
           </View>
-        </Card>
 
-        <View style={{ flexDirection: 'row', gap: spacing.md }}>
-          <Card style={{ flex: 1, alignItems: 'center', gap: spacing.xs }}>
-            <Icon name="person" size={18} color={colors.primary} />
-            <AppText variant="title">{trip.people}</AppText>
-            <AppText variant="caption" tone="muted">
-              People
-            </AppText>
-          </Card>
-          <Card style={{ flex: 1, alignItems: 'center', gap: spacing.xs }}>
-            <Icon name="list" size={18} color={colors.primary} />
-            <AppText variant="title">{trip.expenses}</AppText>
-            <AppText variant="caption" tone="muted">
-              Expenses
-            </AppText>
-          </Card>
-          <Card style={{ flex: 1, alignItems: 'center', gap: spacing.xs }}>
-            <Icon name="clock" size={18} color={colors.primary} />
-            <AppText variant="title">{stats.daysRemaining}</AppText>
-            <AppText variant="caption" tone="muted">
-              Days left
-            </AppText>
-          </Card>
-        </View>
+          <View style={{ height: StyleSheet.hairlineWidth, backgroundColor: colors.border }} />
+
+          <View style={{ flexDirection: 'row' }}>
+            <View style={{ flex: 1, alignItems: 'center', gap: 2 }}>
+              <Icon name="person" size={16} color={colors.primary} />
+              <AppText variant="subtitle">{trip.people}</AppText>
+              <AppText variant="caption" tone="muted">
+                People
+              </AppText>
+            </View>
+            <View style={{ width: StyleSheet.hairlineWidth, backgroundColor: colors.border }} />
+            <View style={{ flex: 1, alignItems: 'center', gap: 2 }}>
+              <Icon name="list" size={16} color={colors.primary} />
+              <AppText variant="subtitle">{trip.expenses}</AppText>
+              <AppText variant="caption" tone="muted">
+                Expenses
+              </AppText>
+            </View>
+            <View style={{ width: StyleSheet.hairlineWidth, backgroundColor: colors.border }} />
+            <View style={{ flex: 1, alignItems: 'center', gap: 2 }}>
+              <Icon name="clock" size={16} color={colors.primary} />
+              <AppText variant="subtitle">{stats.daysRemaining}</AppText>
+              <AppText variant="caption" tone="muted">
+                Days left
+              </AppText>
+            </View>
+          </View>
+        </Card>
 
         <Card>
           <AppText variant="eyebrow">Spending by category</AppText>

@@ -3,7 +3,6 @@ import { Tabs, type BottomTabBarProps } from 'expo-router/js-tabs';
 
 import { BottomNav } from '@/features/home/components/bottom-nav';
 import { DASHBOARD_NAV_ITEMS } from '@/features/home/dashboard-config';
-import { useAppTheme } from '@/theme/theme-provider';
 
 type NavKey = (typeof DASHBOARD_NAV_ITEMS)[number]['key'];
 
@@ -35,23 +34,12 @@ function CustomTabBar({ state, navigation }: BottomTabBarProps) {
 }
 
 export default function TabsLayout() {
-  const { colors } = useAppTheme();
-
   return (
-    <Tabs
-      backBehavior="initialRoute"
-      tabBar={(props) => <CustomTabBar {...props} />}
-      screenOptions={{
-        headerShown: true,
-        headerShadowVisible: false,
-        headerBackButtonDisplayMode: 'minimal',
-        headerStyle: { backgroundColor: colors.background },
-        headerTintColor: colors.text,
-      }}>
-      <Tabs.Screen name="dashboard" options={{ title: '' }} />
-      <Tabs.Screen name="expenses" options={{ title: 'Expenses' }} />
-      <Tabs.Screen name="settle" options={{ title: 'Settle up' }} />
-      <Tabs.Screen name="settings" options={{ title: 'Settings' }} />
+    <Tabs backBehavior="initialRoute" tabBar={(props) => <CustomTabBar {...props} />} screenOptions={{ headerShown: false }}>
+      <Tabs.Screen name="dashboard" />
+      <Tabs.Screen name="expenses" />
+      <Tabs.Screen name="settle" />
+      <Tabs.Screen name="settings" />
     </Tabs>
   );
 }

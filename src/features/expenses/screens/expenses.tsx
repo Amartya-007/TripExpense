@@ -1,6 +1,5 @@
 import { useMemo, useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { AppText } from '@/components/ui/app-text';
 import { Card } from '@/components/ui/card';
@@ -27,7 +26,6 @@ const FILTERS: { key: CategoryFilter; label: string }[] = [
 
 export default function ExpensesScreen() {
   const { colors, radius, spacing } = useAppTheme();
-  const insets = useSafeAreaInsets();
   const { expenses } = useTripData();
   const { refreshing, onRefresh } = useMockRefresh();
   const [query, setQuery] = useState('');
@@ -47,7 +45,7 @@ export default function ExpensesScreen() {
   const groups = groupExpensesByDate(filteredExpenses);
 
   return (
-    <Screen hasHeader contentStyle={{ paddingBottom: insets.bottom + 32 }} onRefresh={onRefresh} refreshing={refreshing}>
+    <Screen onRefresh={onRefresh} refreshing={refreshing}>
       <FadeIn style={{ gap: spacing.lg }}>
       <View style={{ gap: spacing.xs }}>
         <AppText variant="eyebrow">All expenses</AppText>

@@ -1,5 +1,4 @@
 import { View } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { AppText } from '@/components/ui/app-text';
 import { Button } from '@/components/ui/button';
@@ -24,7 +23,6 @@ function formatCurrency(amount: number) {
 
 export default function SettleScreen() {
   const { colors, spacing } = useAppTheme();
-  const insets = useSafeAreaInsets();
   const { expenses } = useTripData();
   const { refreshing, onRefresh } = useMockRefresh();
 
@@ -38,7 +36,7 @@ export default function SettleScreen() {
   }
 
   return (
-    <Screen hasHeader contentStyle={{ paddingBottom: insets.bottom + 32 }} onRefresh={onRefresh} refreshing={refreshing}>
+    <Screen onRefresh={onRefresh} refreshing={refreshing}>
       <FadeIn style={{ gap: spacing.lg }}>
       <View style={{ gap: spacing.xs }}>
         <AppText variant="eyebrow">Balances</AppText>
