@@ -1,8 +1,8 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
-import { Modal, Pressable, View, type GestureResponderEvent } from 'react-native';
-import Animated, { Easing, useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
+import { useMemo, useRef, useState } from 'react';
+import { Pressable, View, type GestureResponderEvent } from 'react-native';
 
 import { AppText } from '@/components/ui/app-text';
+import { BottomSheet } from '@/components/ui/bottom-sheet';
 import { Icon } from '@/components/ui/icon';
 import { formatFriendlyDate, isSameDay, parseISODate, startOfDay, toISODate } from '@/lib/date/friendly-date';
 import { useAppTheme } from '@/theme/theme-provider';
@@ -22,9 +22,6 @@ const MONTH_LABELS = [
   'July', 'August', 'September', 'October', 'November', 'December',
 ];
 const SWIPE_THRESHOLD = 50;
-const OPEN_DURATION = 260;
-const CLOSE_DURATION = 200;
-const SHEET_TRAVEL = 520;
 
 function buildMonthGrid(viewMonth: Date): Date[] {
   const firstOfMonth = new Date(viewMonth.getFullYear(), viewMonth.getMonth(), 1);
@@ -47,21 +44,10 @@ export function DatePicker({ label, value, onChange, minDate, maxDate, disabled 
   const maxDateValue = maxDate ? startOfDay(parseISODate(maxDate)) : null;
 
   const [open, setOpen] = useState(false);
-  const progress = useSharedValue(0);
   const [viewMonth, setViewMonth] = useState(() => new Date(selected.getFullYear(), selected.getMonth(), 1));
   const touchStartX = useRef<number | null>(null);
 
   const days = useMemo(() => buildMonthGrid(viewMonth), [viewMonth]);
-
-  useEffect(() => {
-    progress.value = withTiming(open ? 1 : 0, {
-      duration: open ? OPEN_DURATION : CLOSE_DURATION,
-      easing: open ? Easing.out(Easing.cubic) : Easing.in(Easing.cubic),
-    });
-  }, [open, progress]);
-
-  const backdropStyle = useAnimatedStyle(() => ({ opacity: progress.value * 0.45 }));
-  const sheetStyle = useAnimatedStyle(() => ({ transform: [{ translateY: (1 - progress.value) * SHEET_TRAVEL }] }));
 
   function openPicker() {
     setViewMonth(new Date(selected.getFullYear(), selected.getMonth(), 1));
@@ -123,138 +109,112 @@ export function DatePicker({ label, value, onChange, minDate, maxDate, disabled 
         <Icon name="calendar" size={18} color={colors.textMuted} />
       </Pressable>
 
-      <Modal animationType="none" onRequestClose={() => setOpen(false)} transparent visible={open}>
-        <View style={{ flex: 1, justifyContent: 'flex-end' }}>
-          <Animated.View
-            style={[{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: '#000000' }, backdropStyle]}
-          />
-          <Pressable
-            accessibilityLabel="Close date picker"
-            onPress={() => setOpen(false)}
-            style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}
-          />
+      <BottomSheet visible={open} onClose={() => setOpen(false)}>
+        <View onTouchEnd={handleTouchEnd} onTouchStart={handleTouchStart}>
+          <View
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              paddingHorizontal: spacing.lg,
+              paddingVertical: spacing.sm,
+            }}>
+            <Pressable accessibilityLabel="Previous month" hitSlop={8} onPress={() => goToMonth(-1)}>
+              <Icon name="chevronLeft" size={20} color={colors.textMuted} />
+            </Pressable>
+            <AppText variant="subtitle">
+              {MONTH_LABELS[viewMonth.getMonth()]} {viewMonth.getFullYear()}
+            </AppText>
+            <Pressable accessibilityLabel="Next month" hitSlop={8} onPress={() => goToMonth(1)}>
+              <Icon name="chevronRight" size={20} color={colors.textMuted} />
+            </Pressable>
+          </View>
 
-          <Animated.View
-            onTouchEnd={handleTouchEnd}
-            onTouchStart={handleTouchStart}
-            style={[
-              {
-                backgroundColor: colors.surface,
-                borderTopLeftRadius: radius.xl,
-                borderTopRightRadius: radius.xl,
-                paddingBottom: spacing.xl,
-              },
-              sheetStyle,
-            ]}>
-            <View style={{ alignItems: 'center', paddingTop: spacing.sm, paddingBottom: spacing.xs }}>
-              <View style={{ width: 40, height: 4, borderRadius: 2, backgroundColor: colors.border }} />
-            </View>
-
-            <View
-              style={{
-                flexDirection: 'row',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                paddingHorizontal: spacing.lg,
-                paddingVertical: spacing.sm,
-              }}>
-              <Pressable accessibilityLabel="Previous month" hitSlop={8} onPress={() => goToMonth(-1)}>
-                <Icon name="chevronLeft" size={20} color={colors.textMuted} />
-              </Pressable>
-              <AppText variant="subtitle">
-                {MONTH_LABELS[viewMonth.getMonth()]} {viewMonth.getFullYear()}
-              </AppText>
-              <Pressable accessibilityLabel="Next month" hitSlop={8} onPress={() => goToMonth(1)}>
-                <Icon name="chevronRight" size={20} color={colors.textMuted} />
-              </Pressable>
-            </View>
-
-            <View style={{ flexDirection: 'row', paddingHorizontal: spacing.md }}>
-              {WEEKDAY_LABELS.map((weekday, index) => (
-                <View key={`${weekday}-${index}`} style={{ width: `${100 / 7}%`, alignItems: 'center', paddingVertical: spacing.xs }}>
-                  <AppText variant="caption" tone="muted">
-                    {weekday}
-                  </AppText>
-                </View>
-              ))}
-            </View>
-
-            <View style={{ flexDirection: 'row', flexWrap: 'wrap', paddingHorizontal: spacing.md }}>
-              {days.map((day) => {
-                const isSelected = isSameDay(day, selected);
-                const isCurrentMonth = day.getMonth() === viewMonth.getMonth();
-                const isTodayDate = isSameDay(day, new Date());
-                const disabledDay = isOutOfRange(day);
-
-                return (
-                  <Pressable
-                    key={day.toISOString()}
-                    accessibilityRole="button"
-                    accessibilityState={{ selected: isSelected, disabled: disabledDay }}
-                    disabled={disabledDay}
-                    onPress={() => handleSelect(day)}
-                    style={{ width: `${100 / 7}%`, aspectRatio: 1, alignItems: 'center', justifyContent: 'center' }}>
-                    <View
-                      style={{
-                        width: 36,
-                        height: 36,
-                        borderRadius: 18,
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        backgroundColor: isSelected ? colors.primary : 'transparent',
-                      }}>
-                      <AppText
-                        variant="body"
-                        style={{
-                          color: disabledDay
-                            ? colors.textMuted
-                            : isSelected
-                              ? colors.primaryForeground
-                              : isCurrentMonth
-                                ? colors.text
-                                : colors.textMuted,
-                          opacity: disabledDay ? 0.4 : isCurrentMonth ? 1 : 0.4,
-                          fontWeight: isTodayDate && !isSelected ? '900' : '400',
-                        }}>
-                        {day.getDate()}
-                      </AppText>
-                    </View>
-                  </Pressable>
-                );
-              })}
-            </View>
-
-            <View style={{ flexDirection: 'row', gap: spacing.sm, paddingHorizontal: spacing.lg, paddingTop: spacing.lg }}>
-              <Pressable
-                onPress={() => setOpen(false)}
-                style={{
-                  flex: 1,
-                  paddingVertical: spacing.md,
-                  borderRadius: radius.lg,
-                  alignItems: 'center',
-                  backgroundColor: colors.surfaceStrong,
-                }}>
-                <AppText variant="body">Cancel</AppText>
-              </Pressable>
-              <Pressable
-                disabled={todayDisabled}
-                onPress={() => handleSelect(new Date())}
-                style={{
-                  flex: 1,
-                  paddingVertical: spacing.md,
-                  borderRadius: radius.lg,
-                  alignItems: 'center',
-                  backgroundColor: colors.primary,
-                  opacity: todayDisabled ? 0.5 : 1,
-                }}>
-                <AppText variant="body" style={{ color: colors.primaryForeground }}>
-                  Today
+          <View style={{ flexDirection: 'row', paddingHorizontal: spacing.md }}>
+            {WEEKDAY_LABELS.map((weekday, index) => (
+              <View key={`${weekday}-${index}`} style={{ width: `${100 / 7}%`, alignItems: 'center', paddingVertical: spacing.xs }}>
+                <AppText variant="caption" tone="muted">
+                  {weekday}
                 </AppText>
-              </Pressable>
-            </View>
-          </Animated.View>
+              </View>
+            ))}
+          </View>
+
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap', paddingHorizontal: spacing.md }}>
+            {days.map((day) => {
+              const isSelected = isSameDay(day, selected);
+              const isCurrentMonth = day.getMonth() === viewMonth.getMonth();
+              const isTodayDate = isSameDay(day, new Date());
+              const disabledDay = isOutOfRange(day);
+
+              return (
+                <Pressable
+                  key={day.toISOString()}
+                  accessibilityRole="button"
+                  accessibilityState={{ selected: isSelected, disabled: disabledDay }}
+                  disabled={disabledDay}
+                  onPress={() => handleSelect(day)}
+                  style={{ width: `${100 / 7}%`, aspectRatio: 1, alignItems: 'center', justifyContent: 'center' }}>
+                  <View
+                    style={{
+                      width: 36,
+                      height: 36,
+                      borderRadius: 18,
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      backgroundColor: isSelected ? colors.primary : 'transparent',
+                    }}>
+                    <AppText
+                      variant="body"
+                      style={{
+                        color: disabledDay
+                          ? colors.textMuted
+                          : isSelected
+                            ? colors.primaryForeground
+                            : isCurrentMonth
+                              ? colors.text
+                              : colors.textMuted,
+                        opacity: disabledDay ? 0.4 : isCurrentMonth ? 1 : 0.4,
+                        fontWeight: isTodayDate && !isSelected ? '900' : '400',
+                      }}>
+                      {day.getDate()}
+                    </AppText>
+                  </View>
+                </Pressable>
+              );
+            })}
+          </View>
+
+          <View style={{ flexDirection: 'row', gap: spacing.sm, paddingHorizontal: spacing.lg, paddingTop: spacing.lg }}>
+            <Pressable
+              onPress={() => setOpen(false)}
+              style={{
+                flex: 1,
+                paddingVertical: spacing.md,
+                borderRadius: radius.lg,
+                alignItems: 'center',
+                backgroundColor: colors.surfaceStrong,
+              }}>
+              <AppText variant="body">Cancel</AppText>
+            </Pressable>
+            <Pressable
+              disabled={todayDisabled}
+              onPress={() => handleSelect(new Date())}
+              style={{
+                flex: 1,
+                paddingVertical: spacing.md,
+                borderRadius: radius.lg,
+                alignItems: 'center',
+                backgroundColor: colors.primary,
+                opacity: todayDisabled ? 0.5 : 1,
+              }}>
+              <AppText variant="body" style={{ color: colors.primaryForeground }}>
+                Today
+              </AppText>
+            </Pressable>
+          </View>
         </View>
-      </Modal>
+      </BottomSheet>
     </View>
   );
 }
