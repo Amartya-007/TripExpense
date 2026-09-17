@@ -130,21 +130,25 @@ export default function AddExpenseScreen() {
         </View>
       </View>
 
-      <PickerField label="Paid by" value={getPerson(paidBy).name} onPress={() => setOpenPicker('paidBy')} />
+      <View style={{ flexDirection: 'row', gap: spacing.md }}>
+        <View style={{ flex: 1 }}>
+          <PickerField label="Paid by" value={getPerson(paidBy).name} onPress={() => setOpenPicker('paidBy')} />
+        </View>
 
-      <View style={{ gap: spacing.sm }}>
-        <PickerField label="Split between" value={splitSummary(splitBetween)} onPress={() => setOpenPicker('split')} />
-        {splitBetween.length > 0 ? (
-          <AppText variant="caption" tone="muted">
-            {parsedAmount > 0
-              ? `₹${Math.round(parsedAmount / splitBetween.length).toLocaleString('en-IN')} each`
-              : `Split ${splitBetween.length} ${splitBetween.length === 1 ? 'way' : 'ways'}`}
-          </AppText>
-        ) : (
-          <AppText variant="caption" tone="danger">
-            Pick at least one person to split with
-          </AppText>
-        )}
+        <View style={{ flex: 1, gap: spacing.sm }}>
+          <PickerField label="Split between" value={splitSummary(splitBetween)} onPress={() => setOpenPicker('split')} />
+          {splitBetween.length > 0 ? (
+            <AppText variant="caption" tone="muted">
+              {parsedAmount > 0
+                ? `₹${Math.round(parsedAmount / splitBetween.length).toLocaleString('en-IN')} each`
+                : `Split ${splitBetween.length} ${splitBetween.length === 1 ? 'way' : 'ways'}`}
+            </AppText>
+          ) : (
+            <AppText variant="caption" tone="danger">
+              Pick someone
+            </AppText>
+          )}
+        </View>
       </View>
 
       <Input
