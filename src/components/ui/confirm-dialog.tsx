@@ -52,9 +52,12 @@ export function ConfirmDialog({
     <Modal animationType="none" onRequestClose={onCancel} transparent visible={visible}>
       <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', padding: spacing.xl }}>
         <Animated.View style={[StyleSheet.absoluteFill, { backgroundColor: '#000000' }, backdropStyle]} />
-        <Pressable accessibilityLabel="Dismiss" onPress={onCancel} style={StyleSheet.absoluteFill} />
+        <Pressable accessible={false} importantForAccessibility="no" onPress={onCancel} style={StyleSheet.absoluteFill} />
 
         <Animated.View
+          accessibilityViewIsModal
+          accessibilityRole="alert"
+          accessibilityLabel={`${title}. ${body}`}
           style={[
             {
               width: '100%',
@@ -68,6 +71,7 @@ export function ConfirmDialog({
           ]}>
           <View style={{ flexDirection: 'row', gap: spacing.md, alignItems: 'flex-start' }}>
             <View
+              importantForAccessibility="no"
               style={{
                 width: 44,
                 height: 44,
@@ -93,3 +97,4 @@ export function ConfirmDialog({
     </Modal>
   );
 }
+

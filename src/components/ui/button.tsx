@@ -16,15 +16,40 @@ type ButtonProps = PressableProps & {
   fullWidth?: boolean;
 };
 
-export function Button({ label, variant = 'primary', size = 'md', icon, iconPosition = 'left', loading = false, fullWidth = true, disabled, style, ...props }: ButtonProps) {
+export function Button({
+  label,
+  variant = 'primary',
+  size = 'md',
+  icon,
+  iconPosition = 'left',
+  loading = false,
+  fullWidth = true,
+  disabled,
+  style,
+  accessibilityRole,
+  accessibilityLabel,
+  accessibilityHint,
+  accessibilityState,
+  ...props
+}: ButtonProps) {
   const { colors, motion, radius, spacing } = useAppTheme();
   const current = getButtonVariantStyles(colors)[variant];
   const dimensions = getButtonSizeStyles(spacing)[size];
   const isDisabled = disabled || loading;
   const buttonIcon = loading ? null : icon;
 
+  const mergedAccessibilityState = {
+    ...accessibilityState,
+    disabled: accessibilityState?.disabled ?? isDisabled,
+    busy: accessibilityState?.busy ?? loading,
+  };
+
   return (
     <Pressable
+      accessibilityRole={accessibilityRole ?? 'button'}
+      accessibilityLabel={accessibilityLabel ?? label}
+      accessibilityHint={accessibilityHint}
+      accessibilityState={mergedAccessibilityState}
       disabled={isDisabled}
       style={({ pressed }) => [
         {

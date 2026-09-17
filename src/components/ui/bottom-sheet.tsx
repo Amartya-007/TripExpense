@@ -11,6 +11,8 @@ type BottomSheetProps = {
   contentStyle?: StyleProp<ViewStyle>;
   /** Hide the drag-handle bar - most sheets want it, a couple prefer a plain top edge. */
   showHandle?: boolean;
+  /** Describes the sheet content to screen readers (e.g. "Date picker", "People selector"). */
+  accessibilityLabel?: string;
 };
 
 const OPEN_DURATION = 220;
@@ -31,7 +33,7 @@ const SHEET_TRAVEL = 520;
  * animation (it disappears immediately rather than sliding out) but
  * removes an entire class of open/close timing bugs.
  */
-export function BottomSheet({ visible, onClose, children, contentStyle, showHandle = true }: BottomSheetProps) {
+export function BottomSheet({ visible, onClose, children, contentStyle, showHandle = true, accessibilityLabel }: BottomSheetProps) {
   const { colors, radius, spacing } = useAppTheme();
   const progress = useSharedValue(visible ? 1 : 0);
 
@@ -58,9 +60,16 @@ export function BottomSheet({ visible, onClose, children, contentStyle, showHand
   return (
     <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, justifyContent: 'flex-end', zIndex: 1000, elevation: 24 }}>
       <Animated.View style={[{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: '#000000' }, backdropStyle]} />
-      <Pressable accessibilityLabel="Close" onPress={onClose} style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }} />
+      <Pressable
+        accessible={false}
+        importantForAccessibility="no"
+        onPress={onClose}
+        style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }} />
 
       <Animated.View
+        accessibilityViewIsModal
+        accessibilityRole="dialog"
+        accessibilityLabel={accessibilityLabel}
         style={[
           {
             backgroundColor: colors.surface,
@@ -82,3 +91,4 @@ export function BottomSheet({ visible, onClose, children, contentStyle, showHand
     </View>
   );
 }
+

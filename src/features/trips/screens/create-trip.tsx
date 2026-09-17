@@ -16,6 +16,7 @@ import { TRIP_PEOPLE, type PersonId } from '@/features/expenses/expenses-config'
 import { useTripsList } from '@/features/trips/trips-provider';
 import { appToast } from '@/lib/toast/app-toast';
 import { toISODate } from '@/lib/date/friendly-date';
+import { sanitiseCurrencyInput, validateCurrencyAmount, getCurrencyAmountError } from '@/lib/validation/currency-validation';
 import { useAppTheme } from '@/theme/theme-provider';
 
 const COVER_PRESETS: { icon: IconName; from: string; to: string; label: string }[] = [
@@ -41,7 +42,8 @@ export default function CreateTripScreen() {
   const [coverIndex, setCoverIndex] = useState(0);
 
   const parsedBudget = Number(budget);
-  const canSubmit = name.trim().length > 0 && parsedBudget > 0 && endDate >= startDate && members.length > 0;
+  const budgetError = budget.length > 0 && !validateCurrencyAmount(budget) ? (getCurrencyAmountError(budget) ?? undefined) : undefined;
+  const canSubmit = name.trim().length > 0 && validateCurrencyAmount(budget) && endDate >= startDate && members.length > 0;
 
   function toggleMember(personId: PersonId) {
     setMembers((current) => (current.includes(personId) ? current.filter((id) => id !== personId) : [...current, personId]));
@@ -84,11 +86,12 @@ export default function CreateTripScreen() {
 
         <Input
           label="Budget"
-          onChangeText={setBudget}
+          onChangeText={(raw) => setBudget(sanitiseCurrencyInput(raw))}
           placeholder="e.g. 30000"
           value={budget}
           keyboardType="decimal-pad"
           leftIcon="wallet"
+          error={budgetError}
         />
 
         <View style={{ gap: spacing.sm }}>

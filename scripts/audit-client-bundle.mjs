@@ -8,6 +8,7 @@ const clientDirectory = fileURLToPath(new URL('../dist/client/', import.meta.url
 const serverOnlyVariables = [
   'DATABASE_URL',
   'BETTER_AUTH_SECRET',
+  'BETTER_AUTH_API_KEY',
   'RESEND_API_KEY',
   'GOOGLE_CLIENT_SECRET',
   'VENDEL_API_KEY',

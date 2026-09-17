@@ -90,6 +90,14 @@ const serverEnvSchema = z
           });
         }
       });
+
+      if (value.SMS_PROVIDER === 'console') {
+        context.addIssue({
+          code: 'custom',
+          path: ['SMS_PROVIDER'],
+          message: 'SMS_PROVIDER=console is not allowed in production — set SMS_PROVIDER=vendel and configure VENDEL_API_KEY',
+        });
+      }
     }
   });
 

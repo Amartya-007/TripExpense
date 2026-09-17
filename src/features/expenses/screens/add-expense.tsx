@@ -23,6 +23,7 @@ import {
 } from '@/features/expenses/expenses-config';
 import { useTripData } from '@/features/expenses/trip-data-provider';
 import { toISODate } from '@/lib/date/friendly-date';
+import { sanitiseCurrencyInput, validateCurrencyAmount, getCurrencyAmountError } from '@/lib/validation/currency-validation';
 import { useAppTheme } from '@/theme/theme-provider';
 
 const CATEGORY_KEYS = Object.keys(EXPENSE_CATEGORIES) as ExpenseCategory[];
@@ -55,7 +56,9 @@ export default function AddExpenseScreen() {
   const [openPicker, setOpenPicker] = useState<'paidBy' | 'split' | null>(null);
 
   const parsedAmount = Number(amount);
-  const canSubmit = title.trim().length > 0 && parsedAmount > 0 && splitBetween.length > 0;
+  const isValidAmount = validateCurrencyAmount(amount);
+  const amountError = amount.length > 0 && !isValidAmount ? getCurrencyAmountError(amount) : null;
+  const canSubmit = title.trim().length > 0 && isValidAmount && splitBetween.length > 0;
 
   function buildDateTime(): string {
     if (existingExpense && existingExpense.dateTime.slice(0, 10) === selectedDate) {
@@ -103,13 +106,20 @@ export default function AddExpenseScreen() {
           <TextInput
             autoFocus={!isEditing}
             keyboardType="decimal-pad"
-            onChangeText={setAmount}
+            onChangeText={(raw) => setAmount(sanitiseCurrencyInput(raw))}
             placeholder="0"
             placeholderTextColor={colors.textMuted}
             style={{ fontSize: 44, fontWeight: '900', color: colors.text, minWidth: 80, textAlign: 'center' }}
             value={amount}
           />
         </View>
+        {amountError ? (
+          <View accessibilityLiveRegion="polite" accessibilityRole="alert">
+            <AppText variant="caption" tone="danger">
+              {amountError}
+            </AppText>
+          </View>
+        ) : null}
       </View>
 
       <Input label="What was it for?" onChangeText={setTitle} placeholder="e.g. Dinner at the beach shack" value={title} />

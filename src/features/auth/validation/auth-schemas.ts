@@ -2,7 +2,11 @@ import { z } from 'zod';
 
 import { authPolicy } from '@/constants/auth-policy';
 
-const emailSchema = z.string().min(1, 'Enter your email address').email('Enter a valid email address');
+const emailSchema = z
+  .string()
+  .min(1, 'Enter your email address')
+  .transform((value) => value.trim().toLowerCase())
+  .pipe(z.string().email('Enter a valid email address'));
 const currentPasswordSchema = z
   .string()
   .min(1, 'Enter your password')
@@ -21,7 +25,10 @@ export const signInSchema = z.object({
 
 export const signUpSchema = z
   .object({
-    name: z.string().min(2, 'Name must contain at least 2 characters').max(80, 'Name must contain at most 80 characters'),
+    name: z
+      .string()
+      .transform((value) => value.trim())
+      .pipe(z.string().min(2, 'Name must contain at least 2 characters').max(80, 'Name must contain at most 80 characters')),
     email: emailSchema,
     password: newPasswordSchema,
     confirmPassword: z.string().min(1, 'Confirm your password'),

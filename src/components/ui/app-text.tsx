@@ -7,8 +7,16 @@ type AppTextProps = TextProps & {
   tone?: 'default' | 'muted' | 'primary' | 'danger';
 };
 
-export function AppText({ variant = 'body', tone = 'default', style, selectable = true, ...props }: AppTextProps) {
+export function AppText({
+  variant = 'body',
+  tone = 'default',
+  style,
+  selectable = true,
+  accessibilityRole,
+  ...props
+}: AppTextProps) {
   const { colors, typography } = useAppTheme();
+  const computedRole = accessibilityRole ?? (variant === 'hero' || variant === 'title' ? 'header' : undefined);
   const variantStyles = {
     hero: { fontSize: typography.hero, lineHeight: 42, fontWeight: '900', fontFamily: 'Inter-Bold' },
     title: { fontSize: typography.title, lineHeight: 34, fontWeight: '900', fontFamily: 'Inter-Bold' },
@@ -26,6 +34,7 @@ export function AppText({ variant = 'body', tone = 'default', style, selectable 
 
   return (
     <Text
+      accessibilityRole={computedRole}
       selectable={selectable}
       style={[
         variantStyles[variant],

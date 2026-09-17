@@ -9,9 +9,21 @@ type AlertProps = {
   body: string;
   tone?: 'info' | 'success' | 'warning' | 'danger';
   icon?: IconName;
+  /** Override the default combined screen reader label (title + body). */
+  accessibilityLabel?: string;
+  accessibilityRole?: 'alert' | 'none' | 'text';
+  accessibilityLiveRegion?: 'none' | 'polite' | 'assertive';
 };
 
-export function Alert({ title, body, tone = 'info', icon }: AlertProps) {
+export function Alert({
+  title,
+  body,
+  tone = 'info',
+  icon,
+  accessibilityLabel,
+  accessibilityRole,
+  accessibilityLiveRegion,
+}: AlertProps) {
   const { colors, radius, spacing } = useAppTheme();
   const toneStyles = {
     info: { backgroundColor: colors.infoSoft, borderColor: colors.info, icon: 'info' },
@@ -23,12 +35,17 @@ export function Alert({ title, body, tone = 'info', icon }: AlertProps) {
   const iconName = icon ?? current.icon;
 
   return (
-    <View style={{ flexDirection: 'row', gap: spacing.md, borderWidth: 1, borderColor: current.borderColor, borderRadius: radius.lg, padding: spacing.lg, backgroundColor: current.backgroundColor }}>
-      <Icon name={iconName} size={22} color={current.borderColor} />
-      <View style={{ flex: 1, gap: spacing.xs }}>
+    <View
+      accessibilityRole={accessibilityRole ?? 'alert'}
+      accessibilityLiveRegion={accessibilityLiveRegion ?? 'polite'}
+      accessibilityLabel={accessibilityLabel ?? `${title}. ${body}`}
+      style={{ flexDirection: 'row', gap: spacing.md, borderWidth: 1, borderColor: current.borderColor, borderRadius: radius.lg, padding: spacing.lg, backgroundColor: current.backgroundColor }}>
+      <Icon name={iconName} size={22} color={current.borderColor} importantForAccessibility="no" />
+      <View style={{ flex: 1, gap: spacing.xs }} importantForAccessibility="no-hide-descendants">
         <AppText variant="subtitle">{title}</AppText>
         <AppText tone="muted">{body}</AppText>
       </View>
     </View>
   );
 }
+

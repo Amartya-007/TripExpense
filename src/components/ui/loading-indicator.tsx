@@ -5,15 +5,28 @@ import { useAppTheme } from '@/theme/theme-provider';
 
 type LoadingIndicatorProps = {
   label?: string;
+  accessibilityLabel?: string;
+  accessibilityRole?: 'progressbar' | 'none';
+  accessibilityLiveRegion?: 'none' | 'polite' | 'assertive';
 };
 
-export function LoadingIndicator({ label }: LoadingIndicatorProps) {
+export function LoadingIndicator({
+  label,
+  accessibilityLabel,
+  accessibilityRole,
+  accessibilityLiveRegion,
+}: LoadingIndicatorProps) {
   const { colors, spacing } = useAppTheme();
 
   return (
-    <View style={{ alignItems: 'center', justifyContent: 'center', gap: spacing.sm, padding: spacing.lg }}>
-      <ActivityIndicator color={colors.primary} />
-      {label ? <AppText variant="caption" tone="muted">{label}</AppText> : null}
+    <View
+      accessibilityRole={accessibilityRole ?? 'progressbar'}
+      accessibilityLiveRegion={accessibilityLiveRegion ?? 'polite'}
+      accessibilityLabel={accessibilityLabel ?? label ?? 'Loading'}
+      style={{ alignItems: 'center', justifyContent: 'center', gap: spacing.sm, padding: spacing.lg }}>
+      <ActivityIndicator color={colors.primary} importantForAccessibility="no" />
+      {label ? <AppText variant="caption" tone="muted" importantForAccessibility="no">{label}</AppText> : null}
     </View>
   );
 }
+

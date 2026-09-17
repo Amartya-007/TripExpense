@@ -11,6 +11,8 @@ type InputProps = TextInputProps & {
   leftIcon?: IconName;
   rightIcon?: IconName;
   error?: string;
+  /** Marks the field as required for screen readers. */
+  required?: boolean;
 };
 
 export function Input({
@@ -20,16 +22,30 @@ export function Input({
   leftIcon,
   rightIcon,
   error,
+  required,
   style,
   secureTextEntry,
   autoCapitalize,
   autoCorrect,
   spellCheck,
+  accessibilityLabel,
+  accessibilityHint,
+  accessibilityState,
   ...props
 }: InputProps) {
   const { colors, radius, spacing } = useAppTheme();
   const isQuiet = variant === 'quiet';
   const inputHeight = size === 'sm' ? 44 : size === 'lg' ? 60 : 52;
+
+  // Merge accessibilityState: caller-supplied keys win; inject defaults only when not explicitly set
+  const mergedState = {
+    ...accessibilityState,
+    ...(props.editable !== undefined ? { disabled: accessibilityState?.disabled ?? !props.editable } : {}),
+    ...(required !== undefined ? { required: accessibilityState?.required ?? required } : {}),
+  };
+
+  const computedHint = accessibilityHint ?? (error ? `Error: ${error}` : undefined);
+  const computedLabel = accessibilityLabel ?? label ?? props.placeholder;
 
   return (
     <View style={{ gap: spacing.sm }}>
@@ -55,6 +71,9 @@ export function Input({
           placeholderTextColor={colors.textMuted}
           secureTextEntry={secureTextEntry}
           spellCheck={spellCheck ?? (secureTextEntry ? false : undefined)}
+          accessibilityLabel={computedLabel}
+          accessibilityHint={computedHint}
+          accessibilityState={mergedState}
           style={[
             {
               flex: 1,
@@ -68,7 +87,14 @@ export function Input({
         />
         {rightIcon ? <Icon name={rightIcon} size={18} color={colors.textMuted} /> : null}
       </View>
-      {error ? <AppText variant="caption" tone="danger">{error}</AppText> : null}
+      {error ? (
+        <View accessibilityLiveRegion="polite" accessibilityRole="alert">
+          <AppText variant="caption" tone="danger">
+            {error}
+          </AppText>
+        </View>
+      ) : null}
     </View>
   );
 }
+
