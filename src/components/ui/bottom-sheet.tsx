@@ -68,7 +68,6 @@ export function BottomSheet({ visible, onClose, children, contentStyle, showHand
 
       <Animated.View
         accessibilityViewIsModal
-        accessibilityRole="dialog"
         accessibilityLabel={accessibilityLabel}
         style={[
           {

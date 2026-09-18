@@ -9,6 +9,8 @@ const validEnvironment = {
   EMAIL_FROM: 'Example App <auth@example.com>',
   RESEND_API_KEY: 're_test_key',
   NODE_ENV: 'production',
+  SMS_PROVIDER: 'vendel',
+  VENDEL_API_KEY: 'test-vendel-api-key',
 };
 
 describe('server environment', () => {
@@ -48,9 +50,23 @@ describe('server environment', () => {
     }
   });
 
-  it('defaults to console SMS provider when not specified', () => {
-    const environment = parseServerEnv(validEnvironment);
+  it('defaults to console SMS provider when not specified (non-production)', () => {
+    // console is the SMS_PROVIDER default, but production now rejects it (see
+    // 'rejects console SMS provider in production' below) - clear the fixture's
+    // vendel config and drop to a non-production environment to see the true default.
+    const environment = parseServerEnv({
+      ...validEnvironment,
+      NODE_ENV: 'development',
+      SMS_PROVIDER: undefined,
+      VENDEL_API_KEY: undefined,
+    });
     expect(environment.SMS_PROVIDER).toBe('console');
+  });
+
+  it('rejects console SMS provider in production', () => {
+    expect(() => parseServerEnv({ ...validEnvironment, SMS_PROVIDER: undefined, VENDEL_API_KEY: undefined })).toThrow(
+      'SMS_PROVIDER=console is not allowed in production',
+    );
   });
 
   it('validates vendel configuration when SMS_PROVIDER is vendel', () => {
@@ -58,6 +74,7 @@ describe('server environment', () => {
       parseServerEnv({
         ...validEnvironment,
         SMS_PROVIDER: 'vendel',
+        VENDEL_API_KEY: undefined,
       }),
     ).toThrow('VENDEL_API_KEY is required when SMS_PROVIDER is vendel');
 

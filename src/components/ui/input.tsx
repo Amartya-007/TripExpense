@@ -1,4 +1,4 @@
-import { TextInput, View, type TextInputProps } from 'react-native';
+import { TextInput, View, type AccessibilityState, type TextInputProps } from 'react-native';
 
 import { AppText } from '@/components/ui/app-text';
 import { Icon, type IconName } from '@/components/ui/icon';
@@ -37,11 +37,13 @@ export function Input({
   const isQuiet = variant === 'quiet';
   const inputHeight = size === 'sm' ? 44 : size === 'lg' ? 60 : 52;
 
-  // Merge accessibilityState: caller-supplied keys win; inject defaults only when not explicitly set
-  const mergedState = {
+  // Merge accessibilityState: caller-supplied keys win; inject defaults only when not explicitly set.
+  // `required` isn't part of RN's typed AccessibilityState, but some Android screen readers
+  // still read it through when passed - widen the type locally rather than dropping it.
+  const mergedState: AccessibilityState & { required?: boolean } = {
     ...accessibilityState,
     ...(props.editable !== undefined ? { disabled: accessibilityState?.disabled ?? !props.editable } : {}),
-    ...(required !== undefined ? { required: accessibilityState?.required ?? required } : {}),
+    ...(required !== undefined ? { required: (accessibilityState as { required?: boolean } | undefined)?.required ?? required } : {}),
   };
 
   const computedHint = accessibilityHint ?? (error ? `Error: ${error}` : undefined);
