@@ -147,28 +147,6 @@ export default function DashboardScreen() {
           </View>
         </Card>
 
-        <Card>
-          <AppText variant="eyebrow">Spending by category</AppText>
-          <CategoryBreakdown expenses={expenses} />
-        </Card>
-
-        <Card style={{ gap: 0 }}>
-          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: spacing.xs }}>
-            <AppText variant="eyebrow">Recent activity</AppText>
-            <Pressable accessibilityRole="button" accessibilityLabel="See all expenses" onPress={() => router.push('/expenses')} hitSlop={8}>
-              <AppText variant="caption" tone="primary" style={{ fontWeight: '800' }}>
-                See all
-              </AppText>
-            </Pressable>
-          </View>
-          {recentExpenses.map((expense, index) => (
-            <View key={expense.id}>
-              <ExpenseRow expense={expense} />
-              {index < recentExpenses.length - 1 ? <View style={{ height: StyleSheet.hairlineWidth, backgroundColor: colors.border }} /> : null}
-            </View>
-          ))}
-        </Card>
-
         <Card style={{ backgroundColor: colors.primary, borderColor: colors.primary }}>
           <AppText variant="eyebrow" style={{ color: colors.primaryForeground, opacity: 0.75 }}>
             Today&apos;s limit
@@ -197,6 +175,28 @@ export default function DashboardScreen() {
               ? ` · ${yesterdayDelta <= 0 ? `${Math.abs(yesterdayDelta)}% less` : `${yesterdayDelta}% more`} than yesterday`
               : ''}
           </AppText>
+        </Card>
+
+        <Card>
+          <AppText variant="eyebrow">Spending by category</AppText>
+          <CategoryBreakdown expenses={expenses} />
+        </Card>
+
+        <Card style={{ gap: 0 }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: spacing.xs }}>
+            <AppText variant="eyebrow">Recent activity</AppText>
+            <Pressable accessibilityRole="button" accessibilityLabel="See all expenses" onPress={() => router.push('/expenses')} hitSlop={8}>
+              <AppText variant="caption" tone="primary" style={{ fontWeight: '800' }}>
+                See all
+              </AppText>
+            </Pressable>
+          </View>
+          {recentExpenses.map((expense, index) => (
+            <View key={expense.id}>
+              <ExpenseRow expense={expense} />
+              {index < recentExpenses.length - 1 ? <View style={{ height: StyleSheet.hairlineWidth, backgroundColor: colors.border }} /> : null}
+            </View>
+          ))}
         </Card>
         </FadeIn>
       </Screen>

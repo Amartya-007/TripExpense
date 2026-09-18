@@ -1,3 +1,4 @@
+
 import { Pressable, View } from 'react-native';
 
 import { AppText } from '@/components/ui/app-text';
@@ -18,6 +19,8 @@ type PeoplePickerSheetProps = {
   subtitle?: string;
   /** Only meaningful in 'multiple' mode: powers the "Only payer" action and the missing-payer warning. */
   payerId?: PersonId;
+  /** When true, people can be viewed but not changed. */
+  readOnly?: boolean;
 };
 
 const ALL_PEOPLE_IDS = TRIP_PEOPLE.map((person) => person.id);
@@ -26,25 +29,53 @@ const ALL_PEOPLE_IDS = TRIP_PEOPLE.map((person) => person.id);
  * Bottom-sheet person picker backing both "Paid by" (single) and "Split
  * between" (multiple) on Add Expense - trigger is PickerField.
  */
-export function PeoplePickerSheet({ visible, onClose, mode, selected, onChange, title, subtitle, payerId }: PeoplePickerSheetProps) {
+export function PeoplePickerSheet({
+  visible,
+  onClose,
+  mode,
+  selected,
+  onChange,
+  title,
+  subtitle,
+  payerId,
+  readOnly = false,
+}: PeoplePickerSheetProps) {
   const { colors, radius, spacing } = useAppTheme();
 
   function handleToggle(personId: PersonId) {
+    if (readOnly) {
+      return;
+    }
+
     if (mode === 'single') {
       onChange([personId]);
       onClose();
       return;
     }
 
-    onChange(selected.includes(personId) ? selected.filter((id) => id !== personId) : [...selected, personId]);
+    onChange(
+      selected.includes(personId)
+        ? selected.filter((id) => id !== personId)
+        : [...selected, personId],
+    );
   }
 
-  const missingPayer = mode === 'multiple' && payerId !== undefined && !selected.includes(payerId);
+  const missingPayer =
+    !readOnly &&
+    mode === 'multiple' &&
+    payerId !== undefined &&
+    !selected.includes(payerId);
 
   return (
     <BottomSheet visible={visible} onClose={onClose}>
-      <View style={{ paddingHorizontal: spacing.lg, gap: spacing.xs, paddingBottom: spacing.sm }}>
+      <View
+        style={{
+          paddingHorizontal: spacing.lg,
+          gap: spacing.xs,
+          paddingBottom: spacing.sm,
+        }}>
         <AppText variant="subtitle">{title}</AppText>
+
         {subtitle ? (
           <AppText variant="caption" tone="muted">
             {subtitle}
@@ -61,7 +92,11 @@ export function PeoplePickerSheet({ visible, onClose, mode, selected, onChange, 
             <Pressable
               key={person.id}
               accessibilityRole="button"
-              accessibilityState={{ selected: isSelected }}
+              accessibilityState={{
+                selected: isSelected,
+                disabled: readOnly,
+              }}
+              disabled={readOnly}
               onPress={() => handleToggle(person.id)}
               style={({ pressed }) => [
                 {
@@ -71,23 +106,44 @@ export function PeoplePickerSheet({ visible, onClose, mode, selected, onChange, 
                   paddingVertical: spacing.sm,
                   paddingHorizontal: spacing.sm,
                   borderRadius: radius.lg,
-                  backgroundColor: isSelected ? colors.primarySoft : 'transparent',
-                  opacity: pressed ? 0.8 : 1,
+                  backgroundColor: isSelected
+                    ? colors.primarySoft
+                    : 'transparent',
+                  opacity: readOnly ? 1 : pressed ? 0.8 : 1,
                 },
               ]}>
-              <Avatar name={person.name} color={colors[person.color]} size={32} />
+              <Avatar
+                name={person.name}
+                color={colors[person.color]}
+                size={32}
+              />
+
               <View style={{ flex: 1 }}>
                 <AppText variant="body">{person.name}</AppText>
+
                 {isPayer && mode === 'multiple' ? (
                   <AppText variant="caption" tone="muted">
                     Paid this expense
                   </AppText>
                 ) : null}
               </View>
+
               {isSelected ? (
-                <Icon name="checkCircle" size={22} color={colors.primary} />
-              ) : mode === 'multiple' ? (
-                <View style={{ width: 22, height: 22, borderRadius: 11, borderWidth: 2, borderColor: colors.border }} />
+                <Icon
+                  name="checkCircle"
+                  size={22}
+                  color={colors.primary}
+                />
+              ) : mode === 'multiple' && !readOnly ? (
+                <View
+                  style={{
+                    width: 22,
+                    height: 22,
+                    borderRadius: 11,
+                    borderWidth: 2,
+                    borderColor: colors.border,
+                  }}
+                />
               ) : null}
             </Pressable>
           );
@@ -106,16 +162,33 @@ export function PeoplePickerSheet({ visible, onClose, mode, selected, onChange, 
             backgroundColor: colors.warningSoft,
           }}>
           <Icon name="alert" size={16} color={colors.warning} />
-          <AppText variant="caption" style={{ color: colors.warning, flex: 1 }}>
+
+          <AppText
+            variant="caption"
+            style={{ color: colors.warning, flex: 1 }}>
             The payer isn&apos;t in the split - they&apos;ll be owed back the full amount instead of just their share.
           </AppText>
         </View>
       ) : null}
 
-      {mode === 'multiple' ? (
+      {mode === 'multiple' && !readOnly ? (
         <>
-          <View style={{ flexDirection: 'row', gap: spacing.sm, paddingHorizontal: spacing.lg, paddingTop: spacing.md }}>
-            <Button label="Select all" variant="outline" size="sm" fullWidth={false} style={{ flex: 1 }} onPress={() => onChange(ALL_PEOPLE_IDS)} />
+          <View
+            style={{
+              flexDirection: 'row',
+              gap: spacing.sm,
+              paddingHorizontal: spacing.lg,
+              paddingTop: spacing.md,
+            }}>
+            <Button
+              label="Select all"
+              variant="outline"
+              size="sm"
+              fullWidth={false}
+              style={{ flex: 1 }}
+              onPress={() => onChange(ALL_PEOPLE_IDS)}
+            />
+
             <Button
               label="Only payer"
               variant="outline"
@@ -123,14 +196,39 @@ export function PeoplePickerSheet({ visible, onClose, mode, selected, onChange, 
               fullWidth={false}
               style={{ flex: 1 }}
               disabled={payerId === undefined}
-              onPress={() => payerId !== undefined && onChange([payerId])}
+              onPress={() =>
+                payerId !== undefined && onChange([payerId])
+              }
             />
-            <Button label="Clear" variant="outline" size="sm" fullWidth={false} style={{ flex: 1 }} onPress={() => onChange([])} />
+
+            <Button
+              label="Clear"
+              variant="outline"
+              size="sm"
+              fullWidth={false}
+              style={{ flex: 1 }}
+              onPress={() => onChange([])}
+            />
           </View>
-          <View style={{ paddingHorizontal: spacing.lg, paddingTop: spacing.lg }}>
+
+          <View
+            style={{
+              paddingHorizontal: spacing.lg,
+              paddingTop: spacing.lg,
+            }}>
             <Button label="Done" onPress={onClose} />
           </View>
         </>
+      ) : null}
+
+      {readOnly ? (
+        <View
+          style={{
+            paddingHorizontal: spacing.lg,
+            paddingTop: spacing.lg,
+          }}>
+          <Button label="Close" onPress={onClose} />
+        </View>
       ) : null}
     </BottomSheet>
   );

@@ -1,4 +1,5 @@
 import { router, useLocalSearchParams } from 'expo-router';
+import { toast } from 'sonner-native';
 import { useState } from 'react';
 import { Pressable, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -71,27 +72,35 @@ export default function AddExpenseScreen() {
   }
 
   function handleSubmit() {
-    if (!canSubmit) return;
+  if (!canSubmit) return;
 
-    const input = {
-      title: title.trim(),
-      amount: parsedAmount,
-      category,
-      paidBy,
-      splitBetween,
-      dateTime: buildDateTime(),
-      note: note.trim() || undefined,
-      hasReceipt,
-    };
+  const input = {
+    title: title.trim(),
+    amount: parsedAmount,
+    category,
+    paidBy,
+    splitBetween,
+    dateTime: buildDateTime(),
+    note: note.trim() || undefined,
+    hasReceipt,
+  };
 
-    if (existingExpense) {
-      updateExpense(existingExpense.id, input);
-    } else {
-      addExpense(input);
-    }
+  if (existingExpense) {
+    updateExpense(existingExpense.id, input);
 
-    router.back();
+    toast.success('Expense updated', {
+      description: `${input.title} · ₹${input.amount.toLocaleString('en-IN')}`,
+    });
+  } else {
+    addExpense(input);
+
+    toast.success('Expense added', {
+      description: `${input.title} · ₹${input.amount.toLocaleString('en-IN')}`,
+    });
   }
+
+  router.back();
+}
 
   return (
     <>

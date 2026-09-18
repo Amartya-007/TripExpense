@@ -4,51 +4,288 @@ import { useAppTheme } from '@/theme/theme-provider';
 
 const iconMap = {
   add: { ios: 'plus', android: 'add', web: 'add' },
-  alert: { ios: 'exclamationmark.triangle', android: 'warning', web: 'warning' },
-  appearance: { ios: 'circle.lefthalf.filled', android: 'brightness_6', web: 'brightness_6' },
-  arrowLeft: { ios: 'chevron.left', android: 'arrow_back', web: 'arrow_back' },
-  arrowRight: { ios: 'arrow.right', android: 'arrow_forward', web: 'arrow_forward' },
-  apple: { ios: 'apple.logo', android: 'login', web: 'login' },
-  beach: { ios: 'beach.umbrella.fill', android: 'beach_access', web: 'beach_access' },
-  bell: { ios: 'bell', android: 'notifications', web: 'notifications' },
-  calendar: { ios: 'calendar', android: 'calendar_today', web: 'calendar_today' },
-  check: { ios: 'checkmark', android: 'check', web: 'check' },
-  checkCircle: { ios: 'checkmark.circle.fill', android: 'check_circle', web: 'check_circle' },
-  chevronLeft: { ios: 'chevron.left', android: 'chevron_left', web: 'chevron_left' },
-  chevronRight: { ios: 'chevron.right', android: 'chevron_right', web: 'chevron_right' },
-  chevronDown: { ios: 'chevron.down', android: 'expand_more', web: 'expand_more' },
-  close: { ios: 'xmark', android: 'close', web: 'close' },
-  components: { ios: 'square.grid.2x2', android: 'dashboard', web: 'dashboard' },
-  copy: { ios: 'doc.on.doc', android: 'content_copy', web: 'content_copy' },
-  clock: { ios: 'clock', android: 'schedule', web: 'schedule' },
-  edit: { ios: 'pencil', android: 'edit', web: 'edit' },
-  error: { ios: 'xmark.circle.fill', android: 'error', web: 'error' },
-  filter: { ios: 'slider.horizontal.3', android: 'filter_list', web: 'filter_list' },
-  folder: { ios: 'folder', android: 'folder', web: 'folder' },
-  food: { ios: 'fork.knife', android: 'restaurant', web: 'restaurant' },
-  help: { ios: 'questionmark.circle', android: 'help', web: 'help' },
-  home: { ios: 'house', android: 'home', web: 'home' },
-  info: { ios: 'info.circle', android: 'info', web: 'info' },
-  lock: { ios: 'lock.fill', android: 'lock', web: 'lock' },
-  list: { ios: 'list.bullet', android: 'list', web: 'list' },
-  mail: { ios: 'envelope.fill', android: 'mail', web: 'mail' },
-  mountain: { ios: 'mountain.2.fill', android: 'landscape', web: 'landscape' },
-  person: { ios: 'person.crop.circle', android: 'account_circle', web: 'account_circle' },
-  phone: { ios: 'phone.fill', android: 'phone', web: 'phone' },
-  settle: { ios: 'arrow.left.arrow.right', android: 'swap_horiz', web: 'swap_horiz' },
-  signOut: { ios: 'rectangle.portrait.and.arrow.right', android: 'logout', web: 'logout' },
-  stay: { ios: 'bed.double.fill', android: 'hotel', web: 'hotel' },
-  storage: { ios: 'externaldrive', android: 'storage', web: 'storage' },
-  ticket: { ios: 'ticket.fill', android: 'local_activity', web: 'local_activity' },
-  transport: { ios: 'car.fill', android: 'directions_car', web: 'directions_car' },
-  userPlus: { ios: 'person.badge.plus', android: 'person_add', web: 'person_add' },
-  refresh: { ios: 'arrow.clockwise', android: 'refresh', web: 'refresh' },
-  search: { ios: 'magnifyingglass', android: 'search', web: 'search' },
-  settings: { ios: 'gearshape', android: 'settings', web: 'settings' },
-  sparkles: { ios: 'sparkles', android: 'auto_awesome', web: 'auto_awesome' },
-  trash: { ios: 'trash', android: 'delete', web: 'delete' },
-  wallet: { ios: 'wallet.pass.fill', android: 'account_balance_wallet', web: 'account_balance_wallet' },
-  waves: { ios: 'water.waves', android: 'waves', web: 'waves' },
+
+  alert: {
+    ios: 'exclamationmark.triangle',
+    android: 'warning',
+    web: 'warning',
+  },
+
+  appearance: {
+    ios: 'circle.lefthalf.filled',
+    android: 'brightness_6',
+    web: 'brightness_6',
+  },
+
+  arrowLeft: {
+    ios: 'chevron.left',
+    android: 'arrow_back',
+    web: 'arrow_back',
+  },
+
+  arrowRight: {
+    ios: 'arrow.right',
+    android: 'arrow_forward',
+    web: 'arrow_forward',
+  },
+
+  apple: {
+    ios: 'apple.logo',
+    android: 'login',
+    web: 'login',
+  },
+
+  beach: {
+    ios: 'beach.umbrella.fill',
+    android: 'beach_access',
+    web: 'beach_access',
+  },
+
+  bell: {
+    ios: 'bell',
+    android: 'notifications',
+    web: 'notifications',
+  },
+
+  calendar: {
+    ios: 'calendar',
+    android: 'calendar_today',
+    web: 'calendar_today',
+  },
+
+  check: {
+    ios: 'checkmark',
+    android: 'check',
+    web: 'check',
+  },
+
+  checkCircle: {
+    ios: 'checkmark.circle.fill',
+    android: 'check_circle',
+    web: 'check_circle',
+  },
+
+  chevronLeft: {
+    ios: 'chevron.left',
+    android: 'chevron_left',
+    web: 'chevron_left',
+  },
+
+  chevronRight: {
+    ios: 'chevron.right',
+    android: 'chevron_right',
+    web: 'chevron_right',
+  },
+
+  chevronDown: {
+    ios: 'chevron.down',
+    android: 'expand_more',
+    web: 'expand_more',
+  },
+
+  close: {
+    ios: 'xmark',
+    android: 'close',
+    web: 'close',
+  },
+
+  components: {
+    ios: 'square.grid.2x2',
+    android: 'dashboard',
+    web: 'dashboard',
+  },
+
+  copy: {
+    ios: 'doc.on.doc',
+    android: 'content_copy',
+    web: 'content_copy',
+  },
+
+  clock: {
+    ios: 'clock',
+    android: 'schedule',
+    web: 'schedule',
+  },
+
+  edit: {
+    ios: 'pencil',
+    android: 'edit',
+    web: 'edit',
+  },
+
+  error: {
+    ios: 'xmark.circle.fill',
+    android: 'error',
+    web: 'error',
+  },
+
+  filter: {
+    ios: 'slider.horizontal.3',
+    android: 'filter_list',
+    web: 'filter_list',
+  },
+
+  folder: {
+    ios: 'folder',
+    android: 'folder',
+    web: 'folder',
+  },
+
+  food: {
+    ios: 'fork.knife',
+    android: 'restaurant',
+    web: 'restaurant',
+  },
+
+  help: {
+    ios: 'questionmark.circle',
+    android: 'help',
+    web: 'help',
+  },
+
+  home: {
+    ios: 'house',
+    android: 'home',
+    web: 'home',
+  },
+
+  info: {
+    ios: 'info.circle',
+    android: 'info',
+    web: 'info',
+  },
+
+  lock: {
+    ios: 'lock.fill',
+    android: 'lock',
+    web: 'lock',
+  },
+
+  list: {
+    ios: 'list.bullet',
+    android: 'list',
+    web: 'list',
+  },
+
+  mail: {
+    ios: 'envelope.fill',
+    android: 'mail',
+    web: 'mail',
+  },
+
+  note: {
+    ios: 'note.text',
+    android: 'description',
+    web: 'description',
+  },
+
+  mountain: {
+    ios: 'mountain.2.fill',
+    android: 'landscape',
+    web: 'landscape',
+  },
+
+  person: {
+    ios: 'person.crop.circle',
+    android: 'account_circle',
+    web: 'account_circle',
+  },
+
+  phone: {
+    ios: 'phone.fill',
+    android: 'phone',
+    web: 'phone',
+  },
+
+  receipt: {
+    ios: 'receipt',
+    android: 'receipt_long',
+    web: 'receipt_long',
+  },
+
+  settle: {
+    ios: 'arrow.left.arrow.right',
+    android: 'swap_horiz',
+    web: 'swap_horiz',
+  },
+
+  signOut: {
+    ios: 'rectangle.portrait.and.arrow.right',
+    android: 'logout',
+    web: 'logout',
+  },
+
+  stay: {
+    ios: 'bed.double.fill',
+    android: 'hotel',
+    web: 'hotel',
+  },
+
+  storage: {
+    ios: 'externaldrive',
+    android: 'storage',
+    web: 'storage',
+  },
+
+  ticket: {
+    ios: 'ticket.fill',
+    android: 'local_activity',
+    web: 'local_activity',
+  },
+
+  transport: {
+    ios: 'car.fill',
+    android: 'directions_car',
+    web: 'directions_car',
+  },
+
+  userPlus: {
+    ios: 'person.badge.plus',
+    android: 'person_add',
+    web: 'person_add',
+  },
+
+  refresh: {
+    ios: 'arrow.clockwise',
+    android: 'refresh',
+    web: 'refresh',
+  },
+
+  search: {
+    ios: 'magnifyingglass',
+    android: 'search',
+    web: 'search',
+  },
+
+  settings: {
+    ios: 'gearshape',
+    android: 'settings',
+    web: 'settings',
+  },
+
+  sparkles: {
+    ios: 'sparkles',
+    android: 'auto_awesome',
+    web: 'auto_awesome',
+  },
+
+  trash: {
+    ios: 'trash',
+    android: 'delete',
+    web: 'delete',
+  },
+
+  wallet: {
+    ios: 'wallet.pass.fill',
+    android: 'account_balance_wallet',
+    web: 'account_balance_wallet',
+  },
+
+  waves: {
+    ios: 'water.waves',
+    android: 'waves',
+    web: 'waves',
+  },
 } as const satisfies Record<string, SymbolViewProps['name']>;
 
 export type IconName = keyof typeof iconMap;
@@ -59,7 +296,13 @@ type IconProps = Omit<SymbolViewProps, 'name' | 'tintColor'> & {
   size?: number;
 };
 
-export function Icon({ name, color, size = 20, resizeMode = 'scaleAspectFit', ...props }: IconProps) {
+export function Icon({
+  name,
+  color,
+  size = 20,
+  resizeMode = 'scaleAspectFit',
+  ...props
+}: IconProps) {
   const { colors } = useAppTheme();
 
   return (

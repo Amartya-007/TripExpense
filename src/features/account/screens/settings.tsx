@@ -39,7 +39,7 @@ export default function SettingsScreen() {
   const [appearanceExpanded, setAppearanceExpanded] = useState(false);
   const [confirmingSignOut, setConfirmingSignOut] = useState(false);
 
-  const appearanceLabel = appearanceOptions.find((option) => option.value === mode)?.label ?? 'System';
+  const appearanceLabel = appearanceOptions.find((option) => option.value === mode)?.label ?? 'Light';
   const appVersion = Constants.expoConfig?.version ?? '1.0.0';
 
   function handleConfirmSignOut() {
@@ -147,7 +147,7 @@ export default function SettingsScreen() {
 
           <View style={{ alignItems: 'center', paddingVertical: spacing.md }}>
             <AppText variant="caption" tone="muted">
-              Built by <AppText variant="caption" style={{ fontWeight: '900' }}>Code with Nomi</AppText>
+              Built by <AppText variant="caption" style={{ fontWeight: '900' }}>Amartya Vishwakarma</AppText>
             </AppText>
           </View>
         </FadeIn>

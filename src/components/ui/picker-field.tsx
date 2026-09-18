@@ -21,7 +21,7 @@ export function PickerField({ label, value, onPress, disabled }: PickerFieldProp
   return (
     <View style={{ gap: spacing.sm }}>
       {label ? <AppText variant="caption">{label}</AppText> : null}
-      <Pressable
+            <Pressable
         accessibilityRole="button"
         accessibilityLabel={label ?? value}
         disabled={disabled}
@@ -41,8 +41,17 @@ export function PickerField({ label, value, onPress, disabled }: PickerFieldProp
             opacity: disabled ? 0.5 : pressed ? 0.8 : 1,
           },
         ]}>
-        <AppText variant="body">{value}</AppText>
-        <Icon name="chevronDown" size={18} color={colors.textMuted} />
+        <View style={{ flex: 1, minWidth: 0 }}>
+          <AppText variant="body" numberOfLines={1} ellipsizeMode="tail">
+            {value}
+          </AppText>
+        </View>
+
+        <Icon
+          name="chevronDown"
+          size={18}
+          color={colors.textMuted}
+        />
       </Pressable>
     </View>
   );

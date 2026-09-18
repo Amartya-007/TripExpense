@@ -1,83 +1,84 @@
 export const colors = {
   light: {
-    // Canvas & Surfaces (Soft slate-white base)
+    // Canvas & Surfaces
     background: '#F8FAFC',
     backgroundHigh: '#FFFFFF',
     surface: '#FFFFFF',
     surfaceStrong: '#F1F5F9',
     border: '#E2E8F0',
 
-    // Typography (Zinc-tinted high legibility)
+    // Typography
     text: '#0F172A',
     textMuted: '#64748B',
 
-    // Primary Action (Design-system Blue)
+    // Primary Action
     primary: '#2563EB',
     primarySoft: '#EFF6FF',
     primaryForeground: '#FFFFFF',
 
-    // Accent (Cyan / Sky)
-    accent: '#0EA5E9',
+    // Accent
+    accent: '#3B82F6',
     accentForeground: '#FFFFFF',
 
-    // Secondary Action (Deep Slate)
+    // Secondary Action
     secondary: '#1E293B',
     secondarySoft: 'rgba(30, 41, 59, 0.06)',
     secondaryForeground: '#FFFFFF',
 
-    // Muted & Utility Tokens
+    // Muted & Utility
     muted: 'rgba(37, 99, 235, 0.06)',
     mutedForeground: '#64748B',
 
     // Feedback States
     info: '#0284C7',
     infoSoft: '#E0F2FE',
-    warning: '#F59E0B',
+    warning: '#D97706',
     warningSoft: '#FEF3C7',
-    success: '#10B981',
+    success: '#059669',
     successSoft: '#D1FAE5',
-    danger: '#EF4444',
+    danger: '#DC2626',
     dangerSoft: '#FEE2E2',
 
     // Decorative Tints
     mint: '#ECFDF5',
-    aqua: '#E0F2FE',
-    peach: '#FFEDD5',
-    lavender: '#F5F3FF',
-    lemon: '#FEF9C3',
+    aqua: '#F0F9FF',
+    peach: '#FFF7ED',
+    lavender: '#EEF2FF',
+    lemon: '#FEFCE8',
     ink: '#0F172A',
   },
+
   dark: {
-    // Canvas & Surfaces (Deep Zinc / Slate near-black)
-    background: '#090D16',
+    // Canvas & Surfaces
+    background: '#080B12',
     backgroundHigh: '#0F172A',
-    surface: '#131C2E',
+    surface: '#111827',
     surfaceStrong: '#1E293B',
     border: 'rgba(255, 255, 255, 0.08)',
 
-    // Typography (Off-white & slate muted)
+    // Typography
     text: '#F8FAFC',
     textMuted: '#94A3B8',
 
-    // Primary Action (Bright Blue for dark ground)
-    primary: '#60A5FA',
-    primarySoft: 'rgba(96, 165, 250, 0.16)',
-    primaryForeground: '#090D16',
+    // Primary Action
+    primary: '#3B82F6',
+    primarySoft: 'rgba(59, 130, 246, 0.16)',
+    primaryForeground: '#FFFFFF',
 
-    // Accent (Electric Cyan)
-    accent: '#38BDF8',
-    accentForeground: '#090D16',
+    // Accent
+    accent: '#60A5FA',
+    accentForeground: '#FFFFFF',
 
-    // Secondary Action (Soft Slate Surface)
+    // Secondary Action
     secondary: '#334155',
     secondarySoft: 'rgba(255, 255, 255, 0.08)',
     secondaryForeground: '#F8FAFC',
 
-    // Muted & Utility Tokens
+    // Muted & Utility
     muted: 'rgba(255, 255, 255, 0.06)',
     mutedForeground: '#94A3B8',
 
-    // Feedback States (Desaturated for dark mode to prevent visual strain)
+    // Feedback States
     info: '#38BDF8',
     infoSoft: '#0C4A6E',
     warning: '#FBBF24',

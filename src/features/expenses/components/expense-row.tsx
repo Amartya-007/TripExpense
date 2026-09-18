@@ -3,7 +3,11 @@ import { Pressable, View } from 'react-native';
 
 import { AppText } from '@/components/ui/app-text';
 import { Icon } from '@/components/ui/icon';
-import { EXPENSE_CATEGORIES, getPerson, type Expense } from '@/features/expenses/expenses-config';
+import {
+  EXPENSE_CATEGORIES,
+  getPerson,
+  type Expense,
+} from '@/features/expenses/expenses-config';
 import { formatTime } from '@/lib/date/friendly-date';
 import { useAppTheme } from '@/theme/theme-provider';
 
@@ -12,8 +16,15 @@ function formatCurrency(amount: number) {
 }
 
 function splitLabel(expense: Expense) {
-  if (expense.splitBetween.length === 4) return 'Split 4 ways';
-  return `Split: ${expense.splitBetween.map((id) => getPerson(id).name).join(', ')}`;
+  if (expense.splitBetween.length === 0) {
+    return 'Split btw: No one';
+  }
+
+  const names = expense.splitBetween
+    .slice(0, 2)
+    .map((id) => getPerson(id).name);
+
+  return `Split btw: ${names.join(', ')}${expense.splitBetween.length > 2 ? ', ...' : ''}`;
 }
 
 export function ExpenseRow({ expense }: { expense: Expense }) {
@@ -24,9 +35,20 @@ export function ExpenseRow({ expense }: { expense: Expense }) {
   return (
     <Pressable
       accessibilityRole="button"
-      onPress={() => router.push({ pathname: '/expense/[id]', params: { id: expense.id } })}
+      onPress={() =>
+        router.push({
+          pathname: '/expense/[id]',
+          params: { id: expense.id },
+        })
+      }
       style={({ pressed }) => [
-        { flexDirection: 'row', alignItems: 'center', gap: spacing.md, paddingVertical: spacing.sm, opacity: pressed ? 0.7 : 1 },
+        {
+          flexDirection: 'row',
+          alignItems: 'center',
+          gap: spacing.md,
+          paddingVertical: spacing.sm,
+          opacity: pressed ? 0.7 : 1,
+        },
       ]}>
       <View
         style={{
@@ -40,19 +62,46 @@ export function ExpenseRow({ expense }: { expense: Expense }) {
         <Icon name={category.icon} size={18} color={colors.textMuted} />
       </View>
 
-      <View style={{ flex: 1, gap: 2 }}>
-        <AppText variant="body">{expense.title}</AppText>
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.xs }}>
-          <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: colors[payer.color] }} />
-          <AppText variant="caption" tone="muted">
+      <View
+        style={{
+          flex: 1,
+          minWidth: 0,
+          gap: 2,
+        }}>
+        <AppText variant="body" numberOfLines={1} ellipsizeMode="tail">
+          {expense.title}
+        </AppText>
+
+        <View
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            gap: spacing.xs,
+            minWidth: 0,
+          }}>
+          
+          <AppText
+            variant="caption"
+            tone="muted"
+            numberOfLines={1}
+            ellipsizeMode="tail"
+            style={{ flex: 1 }}>
             {payer.name} paid · {splitLabel(expense)}
           </AppText>
         </View>
       </View>
 
-      <View style={{ alignItems: 'flex-end', gap: 2 }}>
-        <AppText variant="body">{formatCurrency(expense.amount)}</AppText>
-        <AppText variant="caption" tone="muted">
+      <View
+        style={{
+          alignItems: 'flex-end',
+          gap: 2,
+          flexShrink: 0,
+        }}>
+        <AppText variant="body" numberOfLines={1}>
+          {formatCurrency(expense.amount)}
+        </AppText>
+
+        <AppText variant="caption" tone="muted" numberOfLines={1}>
           {formatTime(expense.dateTime)}
         </AppText>
       </View>
