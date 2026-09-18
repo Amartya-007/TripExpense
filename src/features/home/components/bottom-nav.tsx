@@ -56,10 +56,6 @@ export function BottomNav({ activeKey, onNavigate, onAdd }: BottomNavProps) {
 
 const styles = StyleSheet.create({
   shell: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    bottom: 0,
     borderTopWidth: StyleSheet.hairlineWidth,
     elevation: 12,
     shadowOffset: { width: 0, height: -2 },

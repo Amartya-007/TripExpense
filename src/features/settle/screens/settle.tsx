@@ -1,3 +1,4 @@
+import { useBottomTabBarHeight } from 'expo-router/js-tabs';
 import { View } from 'react-native';
 
 import { AppText } from '@/components/ui/app-text';
@@ -23,6 +24,7 @@ function formatCurrency(amount: number) {
 
 export default function SettleScreen() {
   const { colors, spacing } = useAppTheme();
+  const tabBarHeight = useBottomTabBarHeight();
   const { expenses } = useTripData();
   const { refreshing, onRefresh } = useMockRefresh();
 
@@ -36,7 +38,7 @@ export default function SettleScreen() {
   }
 
   return (
-    <Screen onRefresh={onRefresh} refreshing={refreshing}>
+    <Screen contentStyle={{ paddingBottom: tabBarHeight + spacing.lg }} onRefresh={onRefresh} refreshing={refreshing}>
       <FadeIn style={{ gap: spacing.lg }}>
       <View style={{ gap: spacing.xs }}>
         <AppText variant="eyebrow">Balances</AppText>

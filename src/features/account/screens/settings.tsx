@@ -1,5 +1,6 @@
 import Constants from 'expo-constants';
 import { Link, router } from 'expo-router';
+import { useBottomTabBarHeight } from 'expo-router/js-tabs';
 import { useState } from 'react';
 import { View, Pressable } from 'react-native';
 
@@ -33,6 +34,7 @@ function Divider() {
 
 export default function SettingsScreen() {
   const { isSigningOut, signOut, user } = useAuth();
+  const tabBarHeight = useBottomTabBarHeight();
   const { colors, mode, radius, setMode, spacing } = useAppTheme();
   const [appearanceExpanded, setAppearanceExpanded] = useState(false);
   const [confirmingSignOut, setConfirmingSignOut] = useState(false);
@@ -47,7 +49,7 @@ export default function SettingsScreen() {
 
   return (
     <>
-      <Screen>
+      <Screen contentStyle={{ paddingBottom: tabBarHeight + spacing.lg }}>
         <FadeIn style={{ gap: spacing.lg }}>
           <AppText variant="hero">Settings</AppText>
 

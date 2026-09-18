@@ -1,3 +1,4 @@
+import { useBottomTabBarHeight } from 'expo-router/js-tabs';
 import { useMemo, useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
@@ -26,6 +27,7 @@ const FILTERS: { key: CategoryFilter; label: string }[] = [
 
 export default function ExpensesScreen() {
   const { colors, radius, spacing } = useAppTheme();
+  const tabBarHeight = useBottomTabBarHeight();
   const { expenses } = useTripData();
   const { refreshing, onRefresh } = useMockRefresh();
   const [query, setQuery] = useState('');
@@ -45,7 +47,7 @@ export default function ExpensesScreen() {
   const groups = groupExpensesByDate(filteredExpenses);
 
   return (
-    <Screen onRefresh={onRefresh} refreshing={refreshing}>
+    <Screen contentStyle={{ paddingBottom: tabBarHeight + spacing.lg }} onRefresh={onRefresh} refreshing={refreshing}>
       <FadeIn style={{ gap: spacing.lg }}>
       <View style={{ gap: spacing.xs }}>
         <AppText variant="eyebrow">All expenses</AppText>

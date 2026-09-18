@@ -1,4 +1,5 @@
 import { router } from 'expo-router';
+import { useBottomTabBarHeight } from 'expo-router/js-tabs';
 import { useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
@@ -27,6 +28,7 @@ const liveTrip = TRIPS.find((trip) => trip.isLive) ?? TRIPS[0];
 
 export default function DashboardScreen() {
   const { colors, radius, spacing } = useAppTheme();
+  const tabBarHeight = useBottomTabBarHeight();
   const { trip: tripConfig } = DASHBOARD_MOCK_DATA;
   const { expenses } = useTripData();
   const { refreshing, onRefresh } = useMockRefresh();
@@ -41,7 +43,7 @@ export default function DashboardScreen() {
 
   return (
     <>
-      <Screen contentStyle={{ paddingBottom: spacing.xl }} onRefresh={onRefresh} refreshing={refreshing}>
+      <Screen contentStyle={{ paddingBottom: tabBarHeight + spacing.lg }} onRefresh={onRefresh} refreshing={refreshing}>
         <FadeIn style={{ gap: spacing.lg }}>
         <Pressable
           accessibilityRole="button"
