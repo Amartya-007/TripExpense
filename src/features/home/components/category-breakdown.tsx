@@ -7,6 +7,7 @@ import {
   type Expense,
   type ExpenseCategory,
 } from '@/features/expenses/expenses-config';
+import { formatCurrency } from '@/lib/format/currency';
 import { useAppTheme } from '@/theme/theme-provider';
 
 const SIZE = 104;
@@ -19,10 +20,6 @@ type Segment = {
   amount: number;
   percent: number;
 };
-
-function formatCurrency(amount: number) {
-  return `₹${amount.toLocaleString('en-IN')}`;
-}
 
 /** "Spending by category" donut + legend, used on the Trip Dashboard. */
 export function CategoryBreakdown({ expenses }: { expenses: Expense[] }) {

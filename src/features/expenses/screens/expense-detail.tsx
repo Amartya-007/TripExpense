@@ -20,12 +20,9 @@ import {
 import { useTripData } from '@/features/expenses/trip-data-provider';
 import { TRIPS } from '@/features/trips/trips-config';
 import { formatFriendlyDate, formatTime } from '@/lib/date/friendly-date';
+import { formatCurrency } from '@/lib/format/currency';
 import { appToast } from '@/lib/toast/app-toast';
 import { useAppTheme } from '@/theme/theme-provider';
-
-function formatCurrency(amount: number) {
-  return `₹${amount.toLocaleString('en-IN')}`;
-}
 
 const liveTrip = TRIPS.find((trip) => trip.isLive) ?? TRIPS[0];
 

@@ -5,6 +5,7 @@ import { betterAuth } from 'better-auth/minimal';
 import { emailOTP, phoneNumber } from 'better-auth/plugins';
 
 import { appConfig } from '@/constants/app-config';
+import { authPolicy } from '@/constants/auth-policy';
 import { sharedAuthOptions } from '@/server/auth/auth-options';
 import * as authSchema from '@/server/db/auth-schema';
 import { getDatabase } from '@/server/db';
@@ -74,19 +75,19 @@ function createAuth() {
       dash({ apiKey: env.BETTER_AUTH_API_KEY }),
       emailOTP({
         overrideDefaultEmailVerification: true,
-        otpLength: 6,
-        expiresIn: 5 * 60,
-        allowedAttempts: 3,
+        otpLength: authPolicy.otpLength,
+        expiresIn: authPolicy.otpExpirySeconds,
+        allowedAttempts: authPolicy.otpMaxAttempts,
         storeOTP: 'hashed',
-        rateLimit: { window: 60, max: 3 },
+        rateLimit: { window: authPolicy.otpEmailRateLimit.windowSeconds, max: authPolicy.otpEmailRateLimit.max },
         sendVerificationOTP: async ({ email, otp, type }) => {
           await sendAuthOtpEmail({ recipient: email, code: otp, purpose: type });
         },
       }),
       phoneNumber({
-        otpLength: 6,
-        expiresIn: 5 * 60,
-        allowedAttempts: 3,
+        otpLength: authPolicy.otpLength,
+        expiresIn: authPolicy.otpExpirySeconds,
+        allowedAttempts: authPolicy.otpMaxAttempts,
         sendOTP: async ({ phoneNumber: recipientPhone, code }) => {
           await sendAuthOtpSms({ recipient: recipientPhone, code });
         },

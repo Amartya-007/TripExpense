@@ -9,11 +9,8 @@ import {
   type Expense,
 } from '@/features/expenses/expenses-config';
 import { formatTime } from '@/lib/date/friendly-date';
+import { formatCurrency } from '@/lib/format/currency';
 import { useAppTheme } from '@/theme/theme-provider';
-
-function formatCurrency(amount: number) {
-  return `₹${amount.toLocaleString('en-IN')}`;
-}
 
 function splitLabel(expense: Expense) {
   if (expense.splitBetween.length === 0) {

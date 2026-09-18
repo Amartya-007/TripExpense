@@ -8,6 +8,7 @@ import { Card } from '@/components/ui/card';
 import { FadeIn } from '@/components/ui/fade-in';
 import { Icon } from '@/components/ui/icon';
 import { Screen } from '@/components/ui/screen';
+import { DASHBOARD_RECENT_EXPENSES_COUNT } from '@/constants/app-settings';
 import { ExpenseRow } from '@/features/expenses/components/expense-row';
 import { useTripData } from '@/features/expenses/trip-data-provider';
 import { CategoryBreakdown } from '@/features/home/components/category-breakdown';
@@ -16,12 +17,9 @@ import { calculateTripStats } from '@/features/home/trip-stats';
 import { TripSwitcherSheet } from '@/features/trips/components/trip-switcher-sheet';
 import { TRIPS } from '@/features/trips/trips-config';
 import { formatDateRange } from '@/lib/date/friendly-date';
+import { formatCurrency } from '@/lib/format/currency';
 import { useMockRefresh } from '@/lib/hooks/use-mock-refresh';
 import { useAppTheme } from '@/theme/theme-provider';
-
-function formatCurrency(amount: number) {
-  return `₹${amount.toLocaleString('en-IN')}`;
-}
 
 const liveTrip = TRIPS.find((trip) => trip.isLive) ?? TRIPS[0];
 
@@ -36,7 +34,7 @@ export default function DashboardScreen() {
   const stats = calculateTripStats({ budget: liveTrip.budget, startDate: liveTrip.startDate, endDate: liveTrip.endDate, expenses });
   const trip = { ...tripConfig, spent: stats.totalSpent, expenses: expenses.length, budget: liveTrip.budget };
   const spentPercent = Math.min(100, Math.round((trip.spent / trip.budget) * 100));
-  const recentExpenses = [...expenses].sort((a, b) => b.dateTime.localeCompare(a.dateTime)).slice(0, 3);
+  const recentExpenses = [...expenses].sort((a, b) => b.dateTime.localeCompare(a.dateTime)).slice(0, DASHBOARD_RECENT_EXPENSES_COUNT);
   const statusColor = stats.statusTone === 'danger' ? colors.danger : stats.statusTone === 'warning' ? colors.warning : colors.success;
   const yesterdayDelta = stats.yesterdaySpent > 0 ? Math.round(((stats.todaySpent - stats.yesterdaySpent) / stats.yesterdaySpent) * 100) : 0;
 

@@ -2,9 +2,10 @@ import { useRef, useState } from 'react';
 import { Pressable, TextInput, View } from 'react-native';
 
 import { AppText } from '@/components/ui/app-text';
+import { authPolicy } from '@/constants/auth-policy';
 import { useAppTheme } from '@/theme/theme-provider';
 
-const otpLength = 6;
+const otpLength = authPolicy.otpLength;
 
 type OtpCodeInputProps = {
   value: string;

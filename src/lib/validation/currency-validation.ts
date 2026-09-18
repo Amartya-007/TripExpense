@@ -7,8 +7,9 @@
  * user-typed amount uses the same parsing logic.
  */
 
-/** Maximum amount accepted in a single expense or budget field (₹1 crore). */
-export const MAX_CURRENCY_AMOUNT = 10_000_000;
+import { CURRENCY_LOCALE, CURRENCY_SYMBOL, MAX_CURRENCY_AMOUNT } from '@/constants/app-settings';
+
+export { MAX_CURRENCY_AMOUNT };
 
 /**
  * Removes any character that is not a digit or a single decimal point so
@@ -85,7 +86,7 @@ export function getCurrencyAmountError(raw: string): string | null {
   const value = Number(cleaned);
   if (!Number.isFinite(value) || Number.isNaN(value)) return 'Enter a valid amount';
   if (value <= 0) return 'Amount must be greater than zero';
-  if (value > MAX_CURRENCY_AMOUNT) return `Amount cannot exceed ₹${MAX_CURRENCY_AMOUNT.toLocaleString('en-IN')}`;
+  if (value > MAX_CURRENCY_AMOUNT) return `Amount cannot exceed ${CURRENCY_SYMBOL}${MAX_CURRENCY_AMOUNT.toLocaleString(CURRENCY_LOCALE)}`;
 
   return null;
 }

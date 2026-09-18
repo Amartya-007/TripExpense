@@ -27,15 +27,15 @@ export const sharedAuthOptions = {
     },
   },
   session: {
-    expiresIn: DAY_IN_SECONDS * 30,
+    expiresIn: DAY_IN_SECONDS * authPolicy.sessionExpiryDays,
     freshAge: authPolicy.sensitiveActionFreshnessSeconds,
-    updateAge: DAY_IN_SECONDS,
+    updateAge: DAY_IN_SECONDS * authPolicy.sessionUpdateAgeDays,
     deferSessionRefresh: true,
   },
   rateLimit: {
     enabled: true,
-    window: 60,
-    max: 100,
+    window: authPolicy.apiRateLimit.windowSeconds,
+    max: authPolicy.apiRateLimit.max,
     storage: 'database',
   },
 } as const satisfies BetterAuthOptions;

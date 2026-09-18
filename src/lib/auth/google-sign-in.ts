@@ -1,12 +1,13 @@
 import { Platform } from 'react-native';
 
 import { env } from '@/config/env';
+import { GOOGLE_SIGN_IN_TIMEOUT_MS } from '@/constants/app-settings';
 import { withTimeout } from '@/lib/async/with-timeout';
 import { authClient } from '@/lib/auth/auth-client';
 
 export type GoogleSignInOutcome = 'success' | 'cancelled';
 
-const GOOGLE_REQUEST_TIMEOUT_MS = 15_000;
+const GOOGLE_REQUEST_TIMEOUT_MS = GOOGLE_SIGN_IN_TIMEOUT_MS;
 
 export async function signInWithGoogle(): Promise<GoogleSignInOutcome> {
   if (Platform.OS === 'web') {

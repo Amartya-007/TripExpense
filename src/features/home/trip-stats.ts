@@ -1,3 +1,4 @@
+import { BUDGET_HEALTH_THRESHOLDS } from '@/constants/app-settings';
 import { parseISODate, startOfDay, toISODate } from '@/lib/date/friendly-date';
 
 const MS_PER_DAY = 86_400_000;
@@ -75,8 +76,8 @@ export function calculateTripStats({ budget, startDate, endDate, expenses, now =
   const isOverspending = remainingBalance < 0 || (hasStarted && daysRemaining > 0 && dailyBurnRate > remainingPerDay);
 
   let statusTone: TripStatusTone = 'success';
-  if (remainingPercentage < 20) statusTone = 'danger';
-  else if (remainingPercentage <= 50) statusTone = 'warning';
+  if (remainingPercentage < BUDGET_HEALTH_THRESHOLDS.dangerBelowPercent) statusTone = 'danger';
+  else if (remainingPercentage <= BUDGET_HEALTH_THRESHOLDS.warningAtOrBelowPercent) statusTone = 'warning';
 
   return {
     totalSpent,

@@ -4,6 +4,7 @@ import { Pressable, View, type GestureResponderEvent } from 'react-native';
 import { AppText } from '@/components/ui/app-text';
 import { BottomSheet } from '@/components/ui/bottom-sheet';
 import { Icon } from '@/components/ui/icon';
+import { DATE_PICKER_SWIPE_THRESHOLD_PX } from '@/constants/app-settings';
 import { formatFriendlyDate, isSameDay, parseISODate, startOfDay, toISODate } from '@/lib/date/friendly-date';
 import { useAppTheme } from '@/theme/theme-provider';
 
@@ -21,7 +22,7 @@ const MONTH_LABELS = [
   'January', 'February', 'March', 'April', 'May', 'June',
   'July', 'August', 'September', 'October', 'November', 'December',
 ];
-const SWIPE_THRESHOLD = 50;
+const SWIPE_THRESHOLD = DATE_PICKER_SWIPE_THRESHOLD_PX;
 
 function buildMonthGrid(viewMonth: Date): Date[] {
   const firstOfMonth = new Date(viewMonth.getFullYear(), viewMonth.getMonth(), 1);

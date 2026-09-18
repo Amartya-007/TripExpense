@@ -16,13 +16,10 @@ import {
   TRIP_PEOPLE,
 } from '@/features/expenses/expenses-config';
 import { useTripData } from '@/features/expenses/trip-data-provider';
+import { formatCurrencyRounded } from '@/lib/format/currency';
 import { appToast } from '@/lib/toast/app-toast';
 import { useMockRefresh } from '@/lib/hooks/use-mock-refresh';
 import { useAppTheme } from '@/theme/theme-provider';
-
-function formatCurrency(amount: number) {
-  return `₹${Math.round(Math.abs(amount)).toLocaleString('en-IN')}`;
-}
 
 export default function SettleScreen() {
   const { colors, spacing } = useAppTheme();
@@ -73,7 +70,7 @@ export default function SettleScreen() {
                     fontWeight: isSettled ? '500' : '700',
                     flexShrink: 0 
                   }}>
-                  {isSettled ? 'Settled up' : isOwed ? `Gets back ${formatCurrency(balance)}` : `Owes ${formatCurrency(balance)}`}
+                  {isSettled ? 'Settled up' : isOwed ? `Gets back ${formatCurrencyRounded(balance)}` : `Owes ${formatCurrencyRounded(balance)}`}
                 </AppText>
               </View>
             );
@@ -113,7 +110,7 @@ export default function SettleScreen() {
                         {from.name} pays {to.name}
                       </AppText>
                       <AppText variant="caption" tone="muted" numberOfLines={1}>
-                        {formatCurrency(settlement.amount)} to settle up
+                        {formatCurrencyRounded(settlement.amount)} to settle up
                       </AppText>
                     </View>
 

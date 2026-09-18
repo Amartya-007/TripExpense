@@ -31,7 +31,9 @@ import {
   type PersonId,
 } from '@/features/expenses/expenses-config';
 import { useTripData } from '@/features/expenses/trip-data-provider';
+import { CURRENCY_SYMBOL } from '@/constants/app-settings';
 import { toISODate } from '@/lib/date/friendly-date';
+import { formatCurrency } from '@/lib/format/currency';
 import {
   sanitiseCurrencyInput,
   validateCurrencyAmount,
@@ -173,7 +175,7 @@ export default function AddExpenseScreen() {
                   marginRight: 4,
                 }}
               >
-                ₹
+                {CURRENCY_SYMBOL}
               </AppText>
 
               <TextInput
@@ -536,7 +538,7 @@ export default function AddExpenseScreen() {
               isEditing
                 ? 'Save changes'
                 : parsedAmount > 0
-                  ? `Add ₹${parsedAmount.toLocaleString('en-IN')}`
+                  ? `Add ${formatCurrency(parsedAmount)}`
                   : 'Add expense'
             }
             onPress={handleSubmit}

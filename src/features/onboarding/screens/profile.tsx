@@ -12,6 +12,7 @@ import { Input } from "@/components/ui/input";
 import { LoadingIndicator } from "@/components/ui/loading-indicator";
 import { Screen } from "@/components/ui/screen";
 import { ToggleRow } from "@/components/ui/toggle-row";
+import { USERNAME_MAX_LENGTH, USERNAME_MIN_LENGTH } from "@/constants/app-settings";
 import { useAuth } from "@/features/auth/auth-provider";
 import { useBiometricLock } from "@/features/biometrics/biometric-lock-provider";
 import { useCompleteOnboarding } from "@/features/onboarding/hooks/use-complete-onboarding";
@@ -116,12 +117,12 @@ export default function ProfileOnboardingScreen() {
                 autoComplete="username-new"
                 autoCorrect={false}
                 leftIcon="person"
-                maxLength={24}
+                maxLength={USERNAME_MAX_LENGTH}
               />
             )}
           />
           <AppText variant="caption" tone="muted" style={{ marginTop: -spacing.xs }}>
-            3–24 characters. Start with a letter and use letters, numbers, or underscores.
+            {USERNAME_MIN_LENGTH}–{USERNAME_MAX_LENGTH} characters. Start with a letter and use letters, numbers, or underscores.
           </AppText>
         </Card>
 

@@ -12,12 +12,9 @@ import { Screen } from '@/components/ui/screen';
 import { ExpenseRow } from '@/features/expenses/components/expense-row';
 import { EXPENSE_CATEGORIES, groupExpensesByDate, type ExpenseCategory } from '@/features/expenses/expenses-config';
 import { useTripData } from '@/features/expenses/trip-data-provider';
+import { formatCurrency } from '@/lib/format/currency';
 import { useMockRefresh } from '@/lib/hooks/use-mock-refresh';
 import { useAppTheme } from '@/theme/theme-provider';
-
-function formatCurrency(amount: number) {
-  return `₹${amount.toLocaleString('en-IN')}`;
-}
 
 type CategoryFilter = ExpenseCategory | 'all';
 type SortOption = 'date-desc' | 'date-asc' | 'amount-desc' | 'amount-asc';

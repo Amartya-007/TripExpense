@@ -1,4 +1,5 @@
 import type { IconName } from '@/components/ui/icon';
+import { SETTLEMENT_EPSILON } from '@/constants/app-settings';
 import { formatFriendlyDate } from '@/lib/date/friendly-date';
 
 export type PersonId =
@@ -675,7 +676,7 @@ export type Settlement = {
 export function simplifyDebts(
   balances: Record<PersonId, number>,
 ): Settlement[] {
-  const EPSILON = 0.5;
+  const EPSILON = SETTLEMENT_EPSILON;
 
   const creditors = Object.entries(balances)
     .filter(([, amount]) => amount > EPSILON)
