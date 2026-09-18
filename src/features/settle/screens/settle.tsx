@@ -1,5 +1,5 @@
 import { useBottomTabBarHeight } from 'expo-router/js-tabs';
-import { View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 
 import { AppText } from '@/components/ui/app-text';
 import { Button } from '@/components/ui/button';
@@ -54,14 +54,17 @@ export default function SettleScreen() {
           return (
             <View
               key={person.id}
-              style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm }}>
-                <View style={{ width: 10, height: 10, borderRadius: 5, backgroundColor: colors[person.color] }} />
-                <AppText variant="body">{person.name}</AppText>
+              style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: spacing.sm }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm, flexShrink: 1, minWidth: 0 }}>
+                <View style={{ width: 10, height: 10, borderRadius: 5, backgroundColor: colors[person.color], flexShrink: 0 }} />
+                <AppText variant="body" numberOfLines={1} style={{ flexShrink: 1 }}>
+                  {person.name}
+                </AppText>
               </View>
               <AppText
                 variant="body"
-                style={{ color: isSettled ? colors.textMuted : isOwed ? colors.success : colors.text }}>
+                numberOfLines={1}
+                style={{ color: isSettled ? colors.textMuted : isOwed ? colors.success : colors.text, flexShrink: 0 }}>
                 {isSettled ? 'Settled up' : isOwed ? `Gets back ${formatCurrency(balance)}` : `Owes ${formatCurrency(balance)}`}
               </AppText>
             </View>
@@ -79,30 +82,32 @@ export default function SettleScreen() {
       {settlements.length === 0 ? (
         <EmptyState title="Everyone's settled up" body="No outstanding balances on this trip right now." />
       ) : (
-        settlements.map((settlement, index) => {
-          const from = getPerson(settlement.from);
-          const to = getPerson(settlement.to);
+        <Card style={{ gap: 0 }}>
+          {settlements.map((settlement, index) => {
+            const from = getPerson(settlement.from);
+            const to = getPerson(settlement.to);
 
-          return (
-            <Card key={`${settlement.from}-${settlement.to}-${index}`} style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md }}>
-              <View style={{ flex: 1, gap: 2 }}>
-                <AppText variant="body">
-                  {from.name} → {to.name}
-                </AppText>
-                <AppText variant="caption" tone="muted">
-                  {from.name} pays {to.name} to settle up
-                </AppText>
+            return (
+              <View key={`${settlement.from}-${settlement.to}-${index}`}>
+                <View style={{ paddingVertical: spacing.sm, gap: spacing.sm }}>
+                  <View style={{ gap: 2 }}>
+                    <AppText variant="body" numberOfLines={1}>
+                      {from.name} → {to.name}
+                    </AppText>
+                    <AppText variant="caption" tone="muted" numberOfLines={1}>
+                      {from.name} pays {to.name} to settle up
+                    </AppText>
+                  </View>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <AppText variant="title">{formatCurrency(settlement.amount)}</AppText>
+                    <Button label="Remind" size="sm" variant="secondary" fullWidth={false} onPress={() => handleRemind(from.name)} />
+                  </View>
+                </View>
+                {index < settlements.length - 1 ? <View style={{ height: StyleSheet.hairlineWidth, backgroundColor: colors.border }} /> : null}
               </View>
-              <AppText variant="title">{formatCurrency(settlement.amount)}</AppText>
-              <Button
-                label="Remind"
-                size="sm"
-                variant="secondary"
-                onPress={() => handleRemind(from.name)}
-              />
-            </Card>
-          );
-        })
+            );
+          })}
+        </Card>
       )}
       </FadeIn>
     </Screen>

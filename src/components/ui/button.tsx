@@ -13,6 +13,15 @@ type ButtonProps = PressableProps & {
   icon?: IconName;
   iconPosition?: 'left' | 'right';
   loading?: boolean;
+  /**
+   * Stretches the button along the parent's cross axis (default true).
+   * Correct for the common case - a button alone in a column, wanting to
+   * span full width. In a `flexDirection: 'row'` container, the cross axis
+   * is vertical, so this stretches the button's *height* to match its
+   * tallest sibling instead - visible as a squashed/oversized pill next to
+   * normal-height buttons. Pass `fullWidth={false}` for any Button placed
+   * in a row alongside non-Button siblings of unpredictable height.
+   */
   fullWidth?: boolean;
 };
 
