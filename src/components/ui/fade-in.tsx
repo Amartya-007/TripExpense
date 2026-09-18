@@ -5,13 +5,18 @@ import Animated, { Easing, useAnimatedStyle, useSharedValue, withTiming } from '
 type FadeInProps = {
   children: React.ReactNode;
   delay?: number;
+  duration?: number;
+  riseDistance?: number;
   style?: StyleProp<ViewStyle>;
 };
 
-const DURATION = 320;
-const RISE_DISTANCE = 16;
-
-export function FadeIn({ children, delay = 0, style }: FadeInProps) {
+export function FadeIn({
+  children,
+  delay = 0,
+  duration = 320,
+  riseDistance = 16,
+  style,
+}: FadeInProps) {
   const progress = useSharedValue(0);
 
   useEffect(() => {
@@ -26,23 +31,29 @@ export function FadeIn({ children, delay = 0, style }: FadeInProps) {
           return;
         }
         timeoutId = setTimeout(() => {
-          progress.value = withTiming(1, { duration: DURATION, easing: Easing.out(Easing.cubic) });
+          progress.value = withTiming(1, {
+            duration,
+            easing: Easing.out(Easing.cubic),
+          });
         }, delay);
       })
       .catch(() => {
-        progress.value = withTiming(1, { duration: DURATION, easing: Easing.out(Easing.cubic) });
+        progress.value = withTiming(1, {
+          duration,
+          easing: Easing.out(Easing.cubic),
+        });
       });
 
     return () => {
       cancelled = true;
       if (timeoutId) clearTimeout(timeoutId);
     };
-  }, [delay, progress]);
+  }, [delay, duration, progress]);
 
   const animatedStyle = useAnimatedStyle(() => ({
     opacity: progress.value,
-    transform: [{ translateY: (1 - progress.value) * RISE_DISTANCE }],
+    transform: [{ translateY: (1 - progress.value) * riseDistance }],
   }));
 
-  return <Animated.View style={[{ flex: 1 }, style, animatedStyle]}>{children}</Animated.View>;
+  return <Animated.View style={[style, animatedStyle]}>{children}</Animated.View>;
 }

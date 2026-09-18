@@ -1,10 +1,12 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Controller, useForm } from "react-hook-form";
+import { View } from "react-native";
 
 import { Alert } from "@/components/ui/alert";
 import { AppText } from "@/components/ui/app-text";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { FadeIn } from "@/components/ui/fade-in";
 import { HeroPanel } from "@/components/ui/hero-panel";
 import { Input } from "@/components/ui/input";
 import { LoadingIndicator } from "@/components/ui/loading-indicator";
@@ -19,8 +21,10 @@ import {
 } from "@/features/onboarding/onboarding-contract";
 import { ApiError } from "@/lib/api/api-client";
 import { appToast } from "@/lib/toast/app-toast";
+import { useAppTheme } from "@/theme/theme-provider";
 
 export default function ProfileOnboardingScreen() {
+  const { spacing } = useAppTheme();
   const { isSigningOut, refreshSession, signOut, user } = useAuth();
   const {
     availability,
@@ -29,6 +33,7 @@ export default function ProfileOnboardingScreen() {
     isReady: isBiometricReady,
     setEnabled: setAppLockEnabled,
   } = useBiometricLock();
+  
   const completeOnboarding = useCompleteOnboarding();
   const {
     control,
@@ -40,6 +45,7 @@ export default function ProfileOnboardingScreen() {
     defaultValues: { username: user?.username ?? "" },
     mode: "onChange",
   });
+  
   const biometricAvailable = availability?.status === "available";
 
   async function updateAppLock(enabled: boolean) {
@@ -78,85 +84,96 @@ export default function ProfileOnboardingScreen() {
 
   return (
     <Screen>
-      <HeroPanel
-        title="Finish setting up your account"
-        meta={`Signed in as ${user?.email ?? "your account"}`}
-      />
-
-      <Card>
-        {/* <AppText variant="eyebrow">Required</AppText> */}
-        <AppText variant="subtitle">Choose a username</AppText>
-        <AppText tone="muted">
-          Usernames are unique and cannot be shared by two accounts.
-        </AppText>
-        <Controller
-          control={control}
-          name="username"
-          render={({ field: { onBlur, onChange, value }, fieldState }) => (
-            <Input
-              accessibilityLabel="Username"
-              label="Username"
-              placeholder="your_username"
-              value={value}
-              error={fieldState.error?.message}
-              onBlur={onBlur}
-              onChangeText={(text) => onChange(text.toLowerCase())}
-              autoCapitalize="none"
-              autoComplete="username-new"
-              autoCorrect={false}
-              leftIcon="person"
-              maxLength={24}
-            />
-          )}
+      <FadeIn style={{ gap: spacing.xl }}>
+        <HeroPanel
+          title="Finish setting up your account"
+          meta={`Signed in as ${user?.email ?? "your account"}`}
         />
-        <AppText variant="caption" tone="muted">
-          3–24 characters. Start with a letter and use letters, numbers, or
-          underscores.
-        </AppText>
-      </Card>
 
-      <Card>
-        <AppText variant="eyebrow">Optional</AppText>
-        {/* <AppText variant="subtitle">App lock</AppText> */}
+        {/* Username Section */}
+        <Card style={{ gap: spacing.md, padding: spacing.lg }}>
+          <View style={{ gap: spacing.xs }}>
+            <AppText variant="eyebrow" tone="primary">REQUIRED</AppText>
+            <AppText variant="subtitle">Choose a username</AppText>
+            <AppText tone="muted" variant="caption">
+              Usernames are unique and cannot be shared by two accounts.
+            </AppText>
+          </View>
 
-        {!isBiometricReady ? (
-          <LoadingIndicator label="Checking this device…" />
-        ) : null}
-
-        {isBiometricReady && biometricAvailable ? (
-          <ToggleRow
-            label={`Use ${availability.label}`}
-            body="Require biometrics when you return to the app."
-            value={isAppLockEnabled}
-            disabled={isAuthenticating}
-            onValueChange={(enabled) => void updateAppLock(enabled)}
+          <Controller
+            control={control}
+            name="username"
+            render={({ field: { onBlur, onChange, value }, fieldState }) => (
+              <Input
+                accessibilityLabel="Username"
+                label="Username"
+                placeholder="your_username"
+                value={value}
+                error={fieldState.error?.message}
+                onBlur={onBlur}
+                onChangeText={(text) => onChange(text.toLowerCase())}
+                autoCapitalize="none"
+                autoComplete="username-new"
+                autoCorrect={false}
+                leftIcon="person"
+                maxLength={24}
+              />
+            )}
           />
-        ) : null}
+          <AppText variant="caption" tone="muted" style={{ marginTop: -spacing.xs }}>
+            3–24 characters. Start with a letter and use letters, numbers, or underscores.
+          </AppText>
+        </Card>
 
-        {isBiometricReady && !biometricAvailable ? (
-          <Alert
-            title="App lock is unavailable"
-            body={
-              availability?.message ??
-              "This device cannot use biometric app locking."
-            }
-            tone="warning"
+        {/* Security Section */}
+        <Card style={{ gap: spacing.md, padding: spacing.lg }}>
+          <View style={{ gap: spacing.xs }}>
+            <AppText variant="eyebrow" tone="muted">OPTIONAL</AppText>
+            <AppText variant="subtitle">App lock</AppText>
+          </View>
+
+          {!isBiometricReady ? (
+            <LoadingIndicator label="Checking this device…" />
+          ) : null}
+
+          {isBiometricReady && biometricAvailable ? (
+            <ToggleRow
+              label={`Use ${availability.label}`}
+              body="Require biometrics when you return to the app."
+              value={isAppLockEnabled}
+              disabled={isAuthenticating}
+              onValueChange={(enabled) => void updateAppLock(enabled)}
+            />
+          ) : null}
+
+          {isBiometricReady && !biometricAvailable ? (
+            <Alert
+              title="App lock is unavailable"
+              body={
+                availability?.message ??
+                "This device cannot use biometric app locking."
+              }
+              tone="warning"
+            />
+          ) : null}
+        </Card>
+
+        {/* Action Buttons */}
+        <View style={{ gap: spacing.sm, paddingTop: spacing.sm }}>
+          <Button
+            label="Finish setup"
+            loading={isSubmitting}
+            disabled={!isValid || isAuthenticating}
+            onPress={() => void handleSubmit(submit)()}
           />
-        ) : null}
-      </Card>
-
-      <Button
-        label="Finish setup"
-        loading={isSubmitting}
-        disabled={!isValid || isAuthenticating}
-        onPress={() => void handleSubmit(submit)()}
-      />
-      <Button
-        label="Sign out"
-        variant="ghost"
-        loading={isSigningOut}
-        onPress={() => void signOut()}
-      />
+          <Button
+            label="Sign out"
+            variant="ghost"
+            loading={isSigningOut}
+            onPress={() => void signOut()}
+          />
+        </View>
+      </FadeIn>
     </Screen>
   );
 }

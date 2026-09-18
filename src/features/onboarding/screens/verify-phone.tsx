@@ -6,6 +6,7 @@ import { View } from 'react-native';
 import { AppText } from '@/components/ui/app-text';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
+import { FadeIn } from '@/components/ui/fade-in';
 import { HeroPanel } from '@/components/ui/hero-panel';
 import { Input } from '@/components/ui/input';
 import { Screen } from '@/components/ui/screen';
@@ -142,107 +143,119 @@ export default function VerifyPhoneScreen() {
 
   return (
     <Screen>
-      {step === 'input-phone' ? (
-        <>
-          <HeroPanel
-            eyebrow="Phone verification"
-            title="Verify your mobile number"
-            body="A verified phone number is required to secure your TripExpense account."
-            meta={`Signed in as ${user?.email ?? 'your account'}`}
+      {/* 
+        Keying the FadeIn forces the animation to re-run smoothly 
+        when transitioning between the phone input and OTP steps 
+      */}
+      <FadeIn key={step} style={{ flex: 1, gap: spacing.xl }}>
+        {step === 'input-phone' ? (
+          <>
+            <HeroPanel
+              eyebrow="Phone verification"
+              title="Verify your mobile number"
+              body="A verified phone number is required to secure your TripExpense account."
+              meta={`Signed in as ${user?.email ?? 'your account'}`}
+            />
+
+            <Card style={{ gap: spacing.md, padding: spacing.lg }}>
+              <View style={{ gap: spacing.xs }}>
+                <AppText variant="subtitle">Mobile number</AppText>
+                <AppText tone="muted" variant="caption">
+                  We will send a 6-digit SMS verification code to this number.
+                </AppText>
+              </View>
+              
+              <Controller
+                control={phoneForm.control}
+                name="phoneNumber"
+                render={({ field: { onBlur, onChange, value }, fieldState }) => (
+                  <Input
+                    accessibilityLabel="Mobile phone number"
+                    label="Phone number"
+                    placeholder="+91 98765 43210"
+                    value={value}
+                    error={fieldState.error?.message}
+                    onBlur={onBlur}
+                    onChangeText={onChange}
+                    autoCapitalize="none"
+                    autoComplete="tel"
+                    autoCorrect={false}
+                    inputMode="tel"
+                    keyboardType="phone-pad"
+                    leftIcon="phone"
+                  />
+                )}
+              />
+              <Button
+                label="Send verification code"
+                loading={isSendingCode || phoneForm.formState.isSubmitting}
+                disabled={!phoneForm.formState.isValid || isSendingCode}
+                onPress={() => void phoneForm.handleSubmit(handleSendOtp)()}
+              />
+            </Card>
+          </>
+        ) : (
+          <>
+            <HeroPanel
+              eyebrow="Phone verification"
+              title="Enter the six-digit code"
+              body={`We sent a verification code via SMS to ${activePhoneNumber}.`}
+              meta="Expires in 5 minutes"
+            />
+
+            <Card style={{ gap: spacing.md, padding: spacing.lg }}>
+              <Controller
+                control={otpForm.control}
+                name="otp"
+                render={({ field: { onBlur, onChange, value }, fieldState }) => (
+                  <OtpCodeInput
+                    value={value}
+                    onBlur={onBlur}
+                    onChange={onChange}
+                    error={fieldState.error?.message}
+                    label="SMS Verification Code"
+                  />
+                )}
+              />
+              <Button
+                label="Verify phone number"
+                loading={otpForm.formState.isSubmitting}
+                disabled={!otpForm.formState.isValid}
+                onPress={() => void otpForm.handleSubmit(handleVerifyOtp)()}
+              />
+            </Card>
+
+            <View style={{ gap: spacing.sm }}>
+              <Button
+                label={
+                  secondsRemaining > 0
+                    ? `Request another code in ${secondsRemaining}s`
+                    : 'Request another code'
+                }
+                variant="outline"
+                loading={isSendingCode}
+                disabled={isCoolingDown || isSendingCode}
+                onPress={() => void handleResendCode()}
+              />
+              <Button
+                label="Use a different phone number"
+                variant="ghost"
+                onPress={() => setStep('input-phone')}
+              />
+            </View>
+          </>
+        )}
+
+        {/* Pushes the sign-out button to the absolute bottom of the screen */}
+        <View style={{ marginTop: 'auto', paddingTop: spacing.xl }}>
+          <Button
+            label="Sign out"
+            variant="ghost"
+            loading={isSigningOut}
+            onPress={() => void signOut()}
           />
-
-          <Card>
-            <AppText variant="subtitle">Mobile number</AppText>
-            <AppText tone="muted">
-              We will send a 6-digit SMS verification code to this number.
-            </AppText>
-            <Controller
-              control={phoneForm.control}
-              name="phoneNumber"
-              render={({ field: { onBlur, onChange, value }, fieldState }) => (
-                <Input
-                  accessibilityLabel="Mobile phone number"
-                  label="Phone number"
-                  placeholder="+91 98765 43210"
-                  value={value}
-                  error={fieldState.error?.message}
-                  onBlur={onBlur}
-                  onChangeText={onChange}
-                  autoCapitalize="none"
-                  autoComplete="tel"
-                  autoCorrect={false}
-                  inputMode="tel"
-                  keyboardType="phone-pad"
-                  leftIcon="phone"
-                />
-              )}
-            />
-            <Button
-              label="Send verification code"
-              loading={isSendingCode || phoneForm.formState.isSubmitting}
-              disabled={!phoneForm.formState.isValid || isSendingCode}
-              onPress={() => void phoneForm.handleSubmit(handleSendOtp)()}
-            />
-          </Card>
-        </>
-      ) : (
-        <>
-          <HeroPanel
-            eyebrow="Phone verification"
-            title="Enter the six-digit code"
-            body={`We sent a verification code via SMS to ${activePhoneNumber}.`}
-            meta="Expires in 5 minutes"
-          />
-
-          <Card>
-            <Controller
-              control={otpForm.control}
-              name="otp"
-              render={({ field: { onBlur, onChange, value }, fieldState }) => (
-                <OtpCodeInput
-                  value={value}
-                  onBlur={onBlur}
-                  onChange={onChange}
-                  error={fieldState.error?.message}
-                  label="SMS Verification Code"
-                />
-              )}
-            />
-            <Button
-              label="Verify phone number"
-              loading={otpForm.formState.isSubmitting}
-              disabled={!otpForm.formState.isValid}
-              onPress={() => void otpForm.handleSubmit(handleVerifyOtp)()}
-            />
-          </Card>
-
-          <View style={{ gap: spacing.sm }}>
-            <Button
-              label={
-                secondsRemaining > 0
-                  ? `Request another code in ${secondsRemaining}s`
-                  : 'Request another code'
-              }
-              variant="outline"
-              loading={isSendingCode}
-              disabled={isCoolingDown || isSendingCode}
-              onPress={() => void handleResendCode()}
-            />
-            <Button
-              label="Use a different phone number"
-              variant="ghost"
-              onPress={() => setStep('input-phone')}
-            />
-          </View>
-        </>
-      )}
-
-      <Button
-        label="Sign out"
-        variant="ghost"
-        loading={isSigningOut}
-        onPress={() => void signOut()}
-      />
+        </View>
+      </FadeIn>
     </Screen>
   );
 }

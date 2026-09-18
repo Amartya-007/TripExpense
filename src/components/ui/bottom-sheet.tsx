@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
-import { BackHandler, Platform, Pressable, View, type StyleProp, type ViewStyle } from 'react-native';
-import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
+import { BackHandler, Modal, Platform, Pressable, StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
+import Animated, { Easing, useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useAppTheme } from '@/theme/theme-provider';
 
@@ -9,36 +10,34 @@ type BottomSheetProps = {
   onClose: () => void;
   children: React.ReactNode;
   contentStyle?: StyleProp<ViewStyle>;
-  /** Hide the drag-handle bar - most sheets want it, a couple prefer a plain top edge. */
   showHandle?: boolean;
-  /** Describes the sheet content to screen readers (e.g. "Date picker", "People selector"). */
   accessibilityLabel?: string;
 };
 
-const OPEN_DURATION = 220;
-const SHEET_TRAVEL = 520;
+const DURATION = 280;
+const SLIDE_DISTANCE = 450;
 
-/**
- * Shared bottom-sheet shell: dimmed backdrop (tap to close) + a rounded
- * sheet that slides up from the bottom.
- *
- * Deliberately NOT built on React Native's <Modal> - a real Modal nested
- * inside a screen that's itself presented as a navigator modal (Add
- * Expense, Create Trip) is a known source of the sheet flashing open and
- * immediately disappearing on Android. This renders as a plain
- * absolutely-positioned overlay within the screen instead.
- *
- * Kept deliberately simple: mounts/unmounts directly off `visible`, no
- * separate "still closing" state to keep in sync. That costs the close
- * animation (it disappears immediately rather than sliding out) but
- * removes an entire class of open/close timing bugs.
- */
-export function BottomSheet({ visible, onClose, children, contentStyle, showHandle = true, accessibilityLabel }: BottomSheetProps) {
+export function BottomSheet({
+  visible,
+  onClose,
+  children,
+  contentStyle,
+  showHandle = true,
+  accessibilityLabel,
+}: BottomSheetProps) {
   const { colors, radius, spacing } = useAppTheme();
-  const progress = useSharedValue(visible ? 1 : 0);
+  const insets = useSafeAreaInsets();
+  const progress = useSharedValue(0);
 
   useEffect(() => {
-    if (visible) progress.value = withTiming(1, { duration: OPEN_DURATION });
+    if (visible) {
+      progress.value = withTiming(1, {
+        duration: DURATION,
+        easing: Easing.out(Easing.cubic),
+      });
+    } else {
+      progress.value = 0;
+    }
   }, [visible, progress]);
 
   useEffect(() => {
@@ -52,42 +51,70 @@ export function BottomSheet({ visible, onClose, children, contentStyle, showHand
     return () => subscription.remove();
   }, [visible, onClose]);
 
-  const backdropStyle = useAnimatedStyle(() => ({ opacity: progress.value * 0.45 }));
-  const sheetStyle = useAnimatedStyle(() => ({ transform: [{ translateY: (1 - progress.value) * SHEET_TRAVEL }] }));
+  const backdropStyle = useAnimatedStyle(() => ({
+    opacity: progress.value * 0.55,
+  }));
+
+  const sheetStyle = useAnimatedStyle(() => ({
+    transform: [{ translateY: (1 - progress.value) * SLIDE_DISTANCE }],
+  }));
 
   if (!visible) return null;
 
-  return (
-    <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, justifyContent: 'flex-end', zIndex: 1000, elevation: 24 }}>
-      <Animated.View style={[{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: '#000000' }, backdropStyle]} />
-      <Pressable
-        accessible={false}
-        importantForAccessibility="no"
-        onPress={onClose}
-        style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }} />
+  const safeBottomPadding = Math.max(spacing.lg, insets.bottom + spacing.xs);
 
-      <Animated.View
-        accessibilityViewIsModal
-        accessibilityLabel={accessibilityLabel}
-        style={[
-          {
-            backgroundColor: colors.surface,
-            borderTopLeftRadius: radius.xl,
-            borderTopRightRadius: radius.xl,
-            paddingBottom: spacing.xl,
-            maxHeight: '85%',
-          },
-          sheetStyle,
-          contentStyle,
-        ]}>
-        {showHandle ? (
-          <View style={{ alignItems: 'center', paddingTop: spacing.sm, paddingBottom: spacing.xs }}>
-            <View style={{ width: 40, height: 4, borderRadius: 2, backgroundColor: colors.border }} />
-          </View>
-        ) : null}
-        {children}
-      </Animated.View>
-    </View>
+  return (
+    <Modal visible={visible} transparent animationType="none" onRequestClose={onClose}>
+      <View style={styles.overlayWrapper}>
+        {/* Full Screen Dimmed Backdrop */}
+        <Animated.View style={[styles.backdrop, backdropStyle]}>
+          <Pressable style={StyleSheet.absoluteFill} onPress={onClose} />
+        </Animated.View>
+
+        {/* Bottom Sheet Anchored at Screen Base */}
+        <Animated.View
+          accessibilityViewIsModal
+          accessibilityLabel={accessibilityLabel}
+          style={[
+            styles.sheetContainer,
+            {
+              backgroundColor: colors.surface,
+              borderTopLeftRadius: radius.xl,
+              borderTopRightRadius: radius.xl,
+              paddingBottom: safeBottomPadding,
+            },
+            sheetStyle,
+            contentStyle,
+          ]}>
+          {showHandle ? (
+            <View style={{ alignItems: 'center', paddingTop: spacing.sm, paddingBottom: spacing.xs }}>
+              <View style={{ width: 36, height: 4, borderRadius: 2, backgroundColor: colors.border }} />
+            </View>
+          ) : null}
+
+          {children}
+        </Animated.View>
+      </View>
+    </Modal>
   );
 }
 
+const styles = StyleSheet.create({
+  overlayWrapper: {
+    flex: 1,
+    justifyContent: 'flex-end',
+    backgroundColor: 'transparent',
+  },
+  backdrop: {
+    ...StyleSheet.absoluteFill,
+    backgroundColor: '#000000',
+  },
+  sheetContainer: {
+    width: '100%',
+    elevation: 24,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: -6 },
+    shadowOpacity: 0.15,
+    shadowRadius: 12,
+  },
+});

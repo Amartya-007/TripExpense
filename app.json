@@ -7,6 +7,10 @@
     "orientation": "portrait",
     "icon": "./assets/images/trip-expense-icon.png",
     "userInterfaceStyle": "automatic",
+    "androidNavigationBar": {
+      "visible": "adaptive",
+      "backgroundColor": "#00000000"
+    },
     "ios": {
       "bundleIdentifier": "com.amartya.tripexpense",
       "usesAppleSignIn": true

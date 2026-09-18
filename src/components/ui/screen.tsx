@@ -8,21 +8,31 @@ type ScreenProps = {
   contentStyle?: StyleProp<ViewStyle>;
   hasHeader?: boolean;
   scroll?: boolean;
-  /** Pass both to enable pull-to-refresh; omit either to leave it off. */
   onRefresh?: () => void | Promise<void>;
   refreshing?: boolean;
 };
 
-export function Screen({ children, contentStyle, hasHeader = false, scroll = true, onRefresh, refreshing = false }: ScreenProps) {
+export function Screen({
+  children,
+  contentStyle,
+  hasHeader = false,
+  scroll = true,
+  onRefresh,
+  refreshing = false,
+}: ScreenProps) {
   const { colors, spacing } = useAppTheme();
   const insets = useSafeAreaInsets();
+
+  // Guarantee extra spacing above Android system navigation buttons
+  const bottomInset = insets.bottom > 0 ? insets.bottom : spacing.xl;
+
   const baseContentStyle = [
     {
       flexGrow: 1,
       gap: spacing.lg,
-      padding: spacing.xl,
+      paddingHorizontal: Math.max(spacing.xl, insets.left, insets.right),
       paddingTop: hasHeader ? spacing.lg : Math.max(insets.top + spacing.md, spacing.xl),
-      paddingBottom: Math.max(insets.bottom + spacing.xl, spacing.xxl),
+      paddingBottom: bottomInset + spacing.xl, // Safely offsets system buttons
     },
     contentStyle,
   ];
@@ -32,11 +42,19 @@ export function Screen({ children, contentStyle, hasHeader = false, scroll = tru
       {scroll ? (
         <ScrollView
           contentInsetAdjustmentBehavior="automatic"
+          keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
           style={{ flex: 1 }}
           contentContainerStyle={baseContentStyle}
           refreshControl={
-            onRefresh ? <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} colors={[colors.primary]} /> : undefined
+            onRefresh ? (
+              <RefreshControl
+                refreshing={refreshing}
+                onRefresh={onRefresh}
+                tintColor={colors.primary}
+                colors={[colors.primary]}
+              />
+            ) : undefined
           }>
           {children}
         </ScrollView>

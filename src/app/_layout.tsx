@@ -5,6 +5,7 @@ import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
 import { Platform } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { AppToaster } from '@/components/ui/app-toaster';
 import { Button } from '@/components/ui/button';
@@ -75,32 +76,30 @@ function RootNavigator() {
   return (
     <>
       <StatusBar style={resolvedTheme === 'dark' ? 'light' : 'dark'} />
-      <FadeIn>
-        <Stack
-          initialRouteName={initialRouteName}
-          screenOptions={{
-            animation: 'none',
-            headerShown: false,
-            contentStyle: { backgroundColor: colors.background },
-          }}>
-          <Stack.Screen name="index" />
-          <Stack.Screen name="(public)" />
+      <Stack
+        initialRouteName={initialRouteName}
+        screenOptions={{
+          animation: 'none',
+          headerShown: false,
+          contentStyle: { backgroundColor: colors.background },
+        }}>
+        <Stack.Screen name="index" />
+        <Stack.Screen name="(public)" />
 
-          <Stack.Protected guard={phase === 'signed-out'}>
-            <Stack.Screen name="(auth)" />
-          </Stack.Protected>
+        <Stack.Protected guard={phase === 'signed-out'}>
+          <Stack.Screen name="(auth)" />
+        </Stack.Protected>
 
-          <Stack.Protected
-            guard={
-              phase === 'needs-phone-verification' ||
-              phase === 'needs-onboarding' ||
-              phase === 'ready'
-            }>
-            <Stack.Screen name="(main)" />
-          </Stack.Protected>
-        </Stack>
-        <BiometricGate />
-      </FadeIn>
+        <Stack.Protected
+          guard={
+            phase === 'needs-phone-verification' ||
+            phase === 'needs-onboarding' ||
+            phase === 'ready'
+          }>
+          <Stack.Screen name="(main)" />
+        </Stack.Protected>
+      </Stack>
+      <BiometricGate />
     </>
   );
 }
@@ -118,8 +117,10 @@ function ThemedAppRoot() {
 
 export default function RootLayout() {
   return (
-    <AppProviders>
-      <ThemedAppRoot />
-    </AppProviders>
+    <SafeAreaProvider>
+      <AppProviders>
+        <ThemedAppRoot />
+      </AppProviders>
+    </SafeAreaProvider>
   );
 }

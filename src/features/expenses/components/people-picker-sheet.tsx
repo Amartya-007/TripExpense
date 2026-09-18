@@ -1,5 +1,4 @@
-
-import { Pressable, View } from 'react-native';
+import { Pressable, ScrollView, View } from 'react-native';
 
 import { AppText } from '@/components/ui/app-text';
 import { Avatar } from '@/components/ui/avatar';
@@ -17,18 +16,12 @@ type PeoplePickerSheetProps = {
   onChange: (ids: PersonId[]) => void;
   title: string;
   subtitle?: string;
-  /** Only meaningful in 'multiple' mode: powers the "Only payer" action and the missing-payer warning. */
   payerId?: PersonId;
-  /** When true, people can be viewed but not changed. */
   readOnly?: boolean;
 };
 
 const ALL_PEOPLE_IDS = TRIP_PEOPLE.map((person) => person.id);
 
-/**
- * Bottom-sheet person picker backing both "Paid by" (single) and "Split
- * between" (multiple) on Add Expense - trigger is PickerField.
- */
 export function PeoplePickerSheet({
   visible,
   onClose,
@@ -43,9 +36,7 @@ export function PeoplePickerSheet({
   const { colors, radius, spacing } = useAppTheme();
 
   function handleToggle(personId: PersonId) {
-    if (readOnly) {
-      return;
-    }
+    if (readOnly) return;
 
     if (mode === 'single') {
       onChange([personId]);
@@ -83,7 +74,7 @@ export function PeoplePickerSheet({
         ) : null}
       </View>
 
-      <View style={{ paddingHorizontal: spacing.lg, gap: spacing.xs }}>
+      <ScrollView style={{ maxHeight: 280 }} contentContainerStyle={{ paddingHorizontal: spacing.lg, gap: spacing.xs }}>
         {TRIP_PEOPLE.map((person) => {
           const isSelected = selected.includes(person.id);
           const isPayer = person.id === payerId;
@@ -148,7 +139,7 @@ export function PeoplePickerSheet({
             </Pressable>
           );
         })}
-      </View>
+      </ScrollView>
 
       {missingPayer ? (
         <View
@@ -214,7 +205,7 @@ export function PeoplePickerSheet({
           <View
             style={{
               paddingHorizontal: spacing.lg,
-              paddingTop: spacing.lg,
+              paddingTop: spacing.md,
             }}>
             <Button label="Done" onPress={onClose} />
           </View>
@@ -225,7 +216,7 @@ export function PeoplePickerSheet({
         <View
           style={{
             paddingHorizontal: spacing.lg,
-            paddingTop: spacing.lg,
+            paddingTop: spacing.md,
           }}>
           <Button label="Close" onPress={onClose} />
         </View>
