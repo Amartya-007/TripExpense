@@ -3,7 +3,20 @@ export type ServerErrorReport =
   | { event: 'email.delivery-failed'; purpose: AuthEmailPurpose; providerStatus?: number }
   | { event: 'sms.delivery-failed'; provider: string; providerStatus?: number }
   | { event: 'health.database-check-failed' }
-  | { event: 'onboarding.profile-update-failed' };
+  | { event: 'onboarding.profile-update-failed' }
+  | { event: 'trips.list-failed' }
+  | { event: 'trips.create-failed' }
+  | { event: 'trips.detail-failed' }
+  | { event: 'trips.update-failed' }
+  | { event: 'trips.delete-failed' }
+  | { event: 'trips.participant-add-failed' }
+  | { event: 'trips.participant-remove-failed' }
+  | { event: 'expenses.list-failed' }
+  | { event: 'expenses.create-failed' }
+  | { event: 'expenses.update-failed' }
+  | { event: 'expenses.delete-failed' }
+  | { event: 'settlements.list-failed' }
+  | { event: 'settlements.create-failed' };
 
 type AuthEmailPurpose = 'sign-in' | 'email-verification' | 'forget-password' | 'change-email';
 

@@ -45,6 +45,8 @@ export const trip = pgTable(
   {
     id: text('id').primaryKey(),
     name: text('name').notNull(),
+    /** Short place name shown in trip lists, e.g. "Goa" - matches the client's TripSummary.place. */
+    destination: text('destination'),
     currency: text('currency').default('INR').notNull(),
     budget: integer('budget'),
     startDate: timestamp('start_date'),
