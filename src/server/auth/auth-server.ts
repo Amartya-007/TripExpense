@@ -44,7 +44,11 @@ function createAuth() {
         clientId: appConfig.iosBundleIdentifier,
         appBundleIdentifier: appConfig.iosBundleIdentifier,
         mapProfileToUser: (profile) => ({
-          email: profile.email ?? `${profile.sub}@apple.placeholder.local`,
+          // Apple allows users to hide their real email ("Hide My Email").
+          // When null, store null rather than a synthetic placeholder address —
+          // downstream code must treat email as nullable for Apple accounts.
+          // The user.id is derived from profile.sub by Better Auth automatically.
+          email: profile.email ?? null,
         }),
       },
       ...(googleConfigured
@@ -88,6 +92,11 @@ function createAuth() {
         otpLength: authPolicy.otpLength,
         expiresIn: authPolicy.otpExpirySeconds,
         allowedAttempts: authPolicy.otpMaxAttempts,
+        // Note: phoneNumber plugin does not expose a rateLimit option in this
+        // version of better-auth. Rate limiting for SMS OTPs is handled at the
+        // infrastructure layer (Vendel SDK / SMS provider quotas) and via
+        // allowedAttempts above. Revisit when better-auth adds rateLimit to
+        // PhoneNumberOptions (see emailOTP plugin for reference).
         sendOTP: async ({ phoneNumber: recipientPhone, code }) => {
           await sendAuthOtpSms({ recipient: recipientPhone, code });
         },

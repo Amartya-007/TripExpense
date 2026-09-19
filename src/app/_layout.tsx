@@ -1,8 +1,8 @@
+import { Component, useEffect, type ReactNode } from 'react';
 import { useFonts } from 'expo-font';
 import * as SplashScreen from 'expo-splash-screen';
 import { Stack } from 'expo-router/stack';
 import { StatusBar } from 'expo-status-bar';
-import { useEffect } from 'react';
 import { Platform } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
@@ -24,6 +24,56 @@ if (Platform.OS !== 'web') {
   });
 }
 
+// ---------------------------------------------------------------------------
+// Root error boundary — catches any unhandled render error in the tree and
+// shows a recovery screen instead of a blank native crash.
+// ---------------------------------------------------------------------------
+
+type ErrorBoundaryState = { hasError: boolean; error: Error | null };
+
+class RootErrorBoundary extends Component<
+  { children: ReactNode },
+  ErrorBoundaryState
+> {
+  state: ErrorBoundaryState = { hasError: false, error: null };
+
+  static getDerivedStateFromError(error: Error): ErrorBoundaryState {
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error: Error, info: React.ErrorInfo) {
+    // Wire to your observability reporter when ready:
+    // reportServerError({ event: 'ui.unhandled-error', error, info });
+    console.error('[RootErrorBoundary]', error, info.componentStack);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <SafeAreaProvider>
+          <Screen scroll={false} contentStyle={{ justifyContent: 'center' }}>
+            <HeroPanel
+              eyebrow="Something went wrong"
+              title="An unexpected error occurred"
+              body="Please restart the app. Your data has not been affected."
+            />
+            <Button
+              label="Try again"
+              onPress={() => this.setState({ hasError: false, error: null })}
+            />
+          </Screen>
+        </SafeAreaProvider>
+      );
+    }
+
+    return this.props.children;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Navigator
+// ---------------------------------------------------------------------------
+
 function RootNavigator() {
   const { isInitialSessionUnavailable, isRefreshingSession, phase, refreshSession } = useAuth();
   const { isReady: isBiometricReady } = useBiometricLock();
@@ -34,6 +84,13 @@ function RootNavigator() {
     'Inter-SemiBold': require('../../assets/fonts/Inter-SemiBold.otf'),
     'Inter-Bold': require('../../assets/fonts/Inter-Bold.otf'),
   });
+
+  useEffect(() => {
+    if (fontError) {
+      console.warn('[Fonts] Failed to load custom fonts, falling back to system fonts', fontError);
+    }
+  }, [fontError]);
+
   const isStarting =
     (phase === 'checking' && !isInitialSessionUnavailable) ||
     !isBiometricReady ||
@@ -59,7 +116,7 @@ function RootNavigator() {
           <Screen scroll={false} contentStyle={{ justifyContent: 'center' }}>
             <HeroPanel
               eyebrow="Connection needed"
-              title="We couldn’t open your account"
+              title="We couldn't open your account"
               body="Check your internet connection, then try again. Your saved sign-in has not been removed."
             />
             <Button
@@ -117,10 +174,12 @@ function ThemedAppRoot() {
 
 export default function RootLayout() {
   return (
-    <SafeAreaProvider>
-      <AppProviders>
-        <ThemedAppRoot />
-      </AppProviders>
-    </SafeAreaProvider>
+    <RootErrorBoundary>
+      <SafeAreaProvider>
+        <AppProviders>
+          <ThemedAppRoot />
+        </AppProviders>
+      </SafeAreaProvider>
+    </RootErrorBoundary>
   );
 }

@@ -50,15 +50,26 @@ export function calculateTripStats({ budget, startDate, endDate, expenses, now =
   yesterday.setDate(yesterday.getDate() - 1);
   const yesterdayKey = toISODate(yesterday);
 
-  const totalSpent = expenses.reduce((sum, expense) => sum + expense.amount, 0);
-  const todaySpent = expenses.filter((expense) => expense.dateTime.startsWith(todayKey)).reduce((sum, expense) => sum + expense.amount, 0);
-  const yesterdaySpent = expenses.filter((expense) => expense.dateTime.startsWith(yesterdayKey)).reduce((sum, expense) => sum + expense.amount, 0);
+  const { totalSpent, todaySpent, yesterdaySpent } = expenses.reduce(
+    (acc, expense) => {
+      acc.totalSpent += expense.amount;
+      if (expense.dateTime.startsWith(todayKey)) acc.todaySpent += expense.amount;
+      if (expense.dateTime.startsWith(yesterdayKey)) acc.yesterdaySpent += expense.amount;
+      return acc;
+    },
+    { totalSpent: 0, todaySpent: 0, yesterdaySpent: 0 },
+  );
 
   const remainingBalance = budget - totalSpent;
   const remainingPercentage = budget > 0 ? (remainingBalance / budget) * 100 : 0;
 
   const start = startOfDay(parseISODate(startDate));
   const end = startOfDay(parseISODate(endDate));
+
+  if (end < start) {
+    throw new Error(`Trip endDate (${endDate}) is before startDate (${startDate})`);
+  }
+
   const today = startOfDay(now);
   const totalDays = Math.max(1, diffDays(end, start) + 1);
 

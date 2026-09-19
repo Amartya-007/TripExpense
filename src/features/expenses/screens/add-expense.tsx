@@ -2,7 +2,6 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { toast } from 'sonner-native';
 import { useRef, useState } from 'react';
 import {
-  Image,
   Pressable,
   TextInput,
   View,
@@ -85,6 +84,8 @@ export default function AddExpenseScreen() {
     'paidBy' | 'split' | 'category' | null
   >(null);
 
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const parsedAmount = Number(amount);
   const isValidAmount = validateCurrencyAmount(amount);
   const amountError =
@@ -95,7 +96,8 @@ export default function AddExpenseScreen() {
   const canSubmit =
     title.trim().length > 0 &&
     isValidAmount &&
-    splitBetween.length > 0;
+    splitBetween.length > 0 &&
+    !isSubmitting;
 
   function buildDateTime(): string {
     if (
@@ -113,29 +115,36 @@ export default function AddExpenseScreen() {
     return `${selectedDate}T${time}`;
   }
 
-  function handleSubmit() {
+  async function handleSubmit() {
     if (!canSubmit) return;
+    setIsSubmitting(true);
 
-    const input = {
-      title: title.trim(),
-      amount: parsedAmount,
-      category,
-      paidBy,
-      splitBetween,
-      dateTime: buildDateTime(),
-      note: note.trim() || undefined,
-      hasReceipt,
-    };
+    try {
+      const input = {
+        title: title.trim(),
+        amount: parsedAmount,
+        category,
+        paidBy,
+        splitBetween,
+        dateTime: buildDateTime(),
+        note: note.trim() || undefined,
+        hasReceipt,
+      };
 
-    if (existingExpense) {
-      updateExpense(existingExpense.id, input);
-      toast.success('Expense updated');
-    } else {
-      addExpense(input);
-      toast.success('Expense added');
+      if (existingExpense) {
+        updateExpense(existingExpense.id, input);
+        toast.success('Expense updated');
+      } else {
+        addExpense(input);
+        toast.success('Expense added');
+      }
+
+      router.back();
+    } catch {
+      toast.error('Could not save expense', { description: 'Check your connection and try again.' });
+    } finally {
+      setIsSubmitting(false);
     }
-
-    router.back();
   }
 
   const selectedCategory = EXPENSE_CATEGORIES[category];
@@ -201,6 +210,19 @@ export default function AddExpenseScreen() {
                 value={amount}
               />
             </View>
+
+            {/* Amount validation error */}
+            {amountError ? (
+              <AppText
+                style={{
+                  fontSize: 13,
+                  color: colors.danger,
+                  textAlign: 'center',
+                }}
+              >
+                {amountError}
+              </AppText>
+            ) : null}
 
             {/* Title Input */}
             <View
@@ -541,8 +563,9 @@ export default function AddExpenseScreen() {
                   ? `Add ${formatCurrency(parsedAmount)}`
                   : 'Add expense'
             }
-            onPress={handleSubmit}
+            onPress={() => void handleSubmit()}
             disabled={!canSubmit}
+            loading={isSubmitting}
             style={{
               borderRadius: radius.pill,
               height: 56,

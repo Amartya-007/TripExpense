@@ -22,6 +22,13 @@ const TripDataContext = createContext<TripDataContextValue | null>(null);
  * the data source later shouldn't require touching the screens themselves.
  */
 export function TripDataProvider({ children }: { children: ReactNode }) {
+  // SECURITY NOTE — when the real trip API is wired here:
+  // Every mutation (add/update/delete) must be validated server-side:
+  //   - The expense belongs to a trip the authenticated user is a member of.
+  //   - DELETE and UPDATE verify ownership:
+  //       WHERE id = ? AND trip_id IN (SELECT id FROM trips WHERE member_id = session.user.id)
+  //   - Use session.user.id from getAuth().api.getSession() — same pattern as onboarding-handler.ts.
+  //   - Never trust a client-supplied expense id for mutation without this ownership check.
   const [expenses, setExpenses] = useState<Expense[]>(MOCK_EXPENSES);
 
   function addExpense(input: ExpenseInput) {

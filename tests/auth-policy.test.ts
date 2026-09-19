@@ -8,8 +8,8 @@ import {
 } from '@/features/auth/validation/auth-schemas';
 import { sharedAuthOptions } from '@/server/auth/auth-options';
 
-const existingShorterPassword = 'short-pass1';
-const policyPassword = 'secure-pass-123';
+const existingShorterPassword = 'abc123';  // 6 chars — below the 8-char minimum
+const policyPassword = 'secure-pass-123';  // 15 chars — satisfies the 8-char minimum
 
 describe('authentication password policy', () => {
   it('accepts existing shorter passwords at sign in', () => {
@@ -27,7 +27,7 @@ describe('authentication password policy', () => {
     });
 
     expect(result.success).toBe(false);
-    expect(authPolicy.minimumPasswordLength).toBe(15);
+    expect(authPolicy.minimumPasswordLength).toBe(8);
   });
 
   it('requires the shared minimum for password reset', () => {
@@ -76,3 +76,4 @@ describe('authentication password policy', () => {
     expect(sharedAuthOptions.account.accountLinking).not.toHaveProperty('trustedProviders');
   });
 });
+

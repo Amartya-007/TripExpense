@@ -1,6 +1,6 @@
 import { router } from 'expo-router';
 import { useBottomTabBarHeight } from 'expo-router/js-tabs';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { AppText } from '@/components/ui/app-text';
@@ -11,6 +11,7 @@ import { Screen } from '@/components/ui/screen';
 import { DASHBOARD_RECENT_EXPENSES_COUNT } from '@/constants/app-settings';
 import { ExpenseRow } from '@/features/expenses/components/expense-row';
 import { useTripData } from '@/features/expenses/trip-data-provider';
+import { TRIP_PEOPLE } from '@/features/expenses/expenses-config';
 import { CategoryBreakdown } from '@/features/home/components/category-breakdown';
 import { DASHBOARD_MOCK_DATA } from '@/features/home/dashboard-config';
 import { calculateTripStats } from '@/features/home/trip-stats';
@@ -31,10 +32,19 @@ export default function DashboardScreen() {
   const { refreshing, onRefresh } = useMockRefresh();
   const [switcherOpen, setSwitcherOpen] = useState(false);
 
-  const stats = calculateTripStats({ budget: liveTrip.budget, startDate: liveTrip.startDate, endDate: liveTrip.endDate, expenses });
-  const trip = { ...tripConfig, spent: stats.totalSpent, expenses: expenses.length, budget: liveTrip.budget };
+  const stats = useMemo(
+    () => calculateTripStats({ budget: liveTrip.budget, startDate: liveTrip.startDate, endDate: liveTrip.endDate, expenses }),
+    [expenses],
+  );
+  const trip = { ...tripConfig, spent: stats.totalSpent, expenses: expenses.length, budget: liveTrip.budget, people: TRIP_PEOPLE.length };
   const spentPercent = Math.min(100, Math.round((trip.spent / trip.budget) * 100));
-  const recentExpenses = [...expenses].sort((a, b) => b.dateTime.localeCompare(a.dateTime)).slice(0, DASHBOARD_RECENT_EXPENSES_COUNT);
+  const recentExpenses = useMemo(
+    () =>
+      [...expenses]
+        .sort((a, b) => b.dateTime.localeCompare(a.dateTime))
+        .slice(0, DASHBOARD_RECENT_EXPENSES_COUNT),
+    [expenses],
+  );
   const statusColor = stats.statusTone === 'danger' ? colors.danger : stats.statusTone === 'warning' ? colors.warning : colors.success;
   const yesterdayDelta = stats.yesterdaySpent > 0 ? Math.round(((stats.todaySpent - stats.yesterdaySpent) / stats.yesterdaySpent) * 100) : 0;
 

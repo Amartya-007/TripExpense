@@ -24,6 +24,10 @@ describe('computeNetBalances', () => {
     expect(balances.priya).toBe(-50);
     expect(balances.rohan).toBe(0);
     expect(balances.sneha).toBe(0);
+    expect(balances.amit).toBe(0);
+    expect(balances.neha).toBe(0);
+    expect(balances.vikas).toBe(0);
+    expect(balances.ananya).toBe(0);
   });
 
   it('nets out to zero across the whole mock dataset (money is conserved)', () => {
@@ -95,7 +99,7 @@ describe('groupExpensesByDate', () => {
 
 describe('getExpense', () => {
   it('finds an expense by id', () => {
-    expect(getExpense(MOCK_EXPENSES, 'e1')?.title).toBe('Flight/cab from airport');
+    expect(getExpense(MOCK_EXPENSES, 'e1')?.title).toBe('Airport cab');
   });
 
   it('returns undefined for an unknown id', () => {
@@ -105,7 +109,7 @@ describe('getExpense', () => {
 
 describe('simplifyDebts', () => {
   it('settles a simple one-creditor, two-debtor case correctly', () => {
-    const balances: Record<PersonId, number> = { you: 100, priya: -60, rohan: -40, sneha: 0 };
+    const balances: Record<PersonId, number> = { you: 100, priya: -60, rohan: -40, sneha: 0, amit: 0, neha: 0, vikas: 0, ananya: 0 };
 
     const settlements = simplifyDebts(balances);
 
@@ -116,7 +120,7 @@ describe('simplifyDebts', () => {
   });
 
   it('returns nothing when everyone is already settled up', () => {
-    const balances: Record<PersonId, number> = { you: 0, priya: 0, rohan: 0, sneha: 0 };
+    const balances: Record<PersonId, number> = { you: 0, priya: 0, rohan: 0, sneha: 0, amit: 0, neha: 0, vikas: 0, ananya: 0 };
     expect(simplifyDebts(balances)).toEqual([]);
   });
 

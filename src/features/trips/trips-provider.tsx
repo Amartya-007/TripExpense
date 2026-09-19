@@ -1,4 +1,4 @@
-import { createContext, useContext, useMemo, useState, type ReactNode } from 'react';
+import { createContext, useContext, useMemo, useRef, useState, type ReactNode } from 'react';
 
 import { TRIPS as INITIAL_TRIPS, type TripSummary } from '@/features/trips/trips-config';
 
@@ -11,16 +11,15 @@ type TripsListContextValue = {
 
 const TripsListContext = createContext<TripsListContextValue | null>(null);
 
-let nextTripSuffix = 1;
-
 export function TripsListProvider({ children }: { children: ReactNode }) {
   const [addedTrips, setAddedTrips] = useState<TripSummary[]>([]);
+  const nextSuffixRef = useRef(1);
 
   const value = useMemo<TripsListContextValue>(
     () => ({
       trips: [...INITIAL_TRIPS, ...addedTrips],
       addTrip: (input) => {
-        const trip: TripSummary = { ...input, id: `custom-${nextTripSuffix++}`, isLive: false };
+        const trip: TripSummary = { ...input, id: `custom-${nextSuffixRef.current++}`, isLive: false };
         setAddedTrips((current) => [...current, trip]);
         return trip;
       },
