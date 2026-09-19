@@ -50,21 +50,40 @@ describe('computeNetBalances', () => {
 });
 
 describe('groupExpensesByDate', () => {
-  it('groups by calendar date, most recent date first', () => {
-    const groups = groupExpensesByDate(MOCK_EXPENSES);
+  it('preserves the order dates are first encountered in the input (no forced sort)', () => {
+    const sortedDesc = [...MOCK_EXPENSES].sort((a, b) => (a.dateTime < b.dateTime ? 1 : -1));
+    const groups = groupExpensesByDate(sortedDesc);
     const dateKeys = groups.map((group) => group.dateKey);
 
     expect(dateKeys).toEqual(['2026-09-13', '2026-09-12', '2026-09-11', '2026-09-10']);
   });
 
-  it('orders expenses within a day most recent first', () => {
-    const groups = groupExpensesByDate(MOCK_EXPENSES);
+  it('preserves within-day order from the input instead of re-sorting it', () => {
+    const sortedAsc = [...MOCK_EXPENSES].sort((a, b) => (a.dateTime < b.dateTime ? -1 : 1));
+    const groups = groupExpensesByDate(sortedAsc);
     const day1 = groups.find((group) => group.dateKey === '2026-09-10');
 
     expect(day1).toBeDefined();
     const times = day1!.expenses.map((expense) => expense.dateTime);
-    const sorted = [...times].sort().reverse();
-    expect(times).toEqual(sorted);
+    expect(times).toEqual([...times].sort());
+  });
+
+  it('does not silently reverse a caller-chosen sort within a day (regression test for the All Expenses sort/filter bug)', () => {
+    // Sorting by amount ascending, as the "Lowest amount" option does, must
+    // survive grouping for expenses that land in the same day group - that
+    // within-day order is exactly what used to get silently discarded and
+    // forced back to newest-first, making three of the four sort options
+    // look like they did nothing.
+    const day10Expenses = MOCK_EXPENSES.filter((expense) => expense.dateTime.startsWith('2026-09-10'));
+    expect(day10Expenses.length).toBeGreaterThan(1);
+
+    const sortedByAmountAsc = [...day10Expenses].sort((a, b) => a.amount - b.amount);
+    const groups = groupExpensesByDate(sortedByAmountAsc);
+    const day1 = groups.find((group) => group.dateKey === '2026-09-10');
+
+    expect(day1?.expenses.map((expense) => expense.amount)).toEqual(
+      sortedByAmountAsc.map((expense) => expense.amount),
+    );
   });
 
   it('every expense appears in exactly one group', () => {

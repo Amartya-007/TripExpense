@@ -341,6 +341,7 @@ export default function ExpensesScreen() {
               <View
                 style={{
                   width: '100%',
+                  gap: spacing.xs,
                 }}>
                 {dayExpenses.map((expense, index) => (
                   <View key={expense.id}>

@@ -608,7 +608,15 @@ export type ExpenseDateGroup = {
   expenses: Expense[];
 };
 
-/** Groups expenses by calendar date, most recent date first, most recent time first within each day. */
+/**
+ * Groups expenses by calendar date. Preserves the exact order of the input
+ * array both across day groups and within each group - it does NOT impose
+ * its own ordering. Callers that want a specific order (newest first,
+ * highest amount first, etc.) must sort before calling this; previously
+ * this function silently re-sorted each day's items to newest-first
+ * internally, which discarded any other sort the caller had already
+ * applied to same-day expenses.
+ */
 export function groupExpensesByDate(
   expenses: Expense[],
 ): ExpenseDateGroup[] {
@@ -625,15 +633,11 @@ export function groupExpensesByDate(
     }
   }
 
-  return Array.from(byDateKey.entries())
-    .sort(([a], [b]) => (a < b ? 1 : a > b ? -1 : 0))
-    .map(([dateKey, groupExpenses]) => ({
-      dateKey,
-      label: formatFriendlyDate(dateKey),
-      expenses: [...groupExpenses].sort((a, b) =>
-        a.dateTime < b.dateTime ? 1 : -1,
-      ),
-    }));
+  return Array.from(byDateKey.entries()).map(([dateKey, groupExpenses]) => ({
+    dateKey,
+    label: formatFriendlyDate(dateKey),
+    expenses: groupExpenses,
+  }));
 }
 
 /**
