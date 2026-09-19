@@ -21,11 +21,14 @@ function splitLabel(expense: Expense) {
     .slice(0, 2)
     .map((id) => getPerson(id).name);
 
-  return `Split btw: ${names.join(', ')}${expense.splitBetween.length > 2 ? ', ...' : ''}`;
+  return `Split btw: ${names.join(', ')}${
+    expense.splitBetween.length > 2 ? ', ...' : ''
+  }`;
 }
 
 export function ExpenseRow({ expense }: { expense: Expense }) {
   const { colors, radius, spacing } = useAppTheme();
+
   const category = EXPENSE_CATEGORIES[expense.category];
   const payer = getPerson(expense.paidBy);
 
@@ -38,15 +41,14 @@ export function ExpenseRow({ expense }: { expense: Expense }) {
           params: { id: expense.id },
         })
       }
-      style={({ pressed }) => [
-        {
-          flexDirection: 'row',
-          alignItems: 'center',
-          gap: spacing.md,
-          paddingVertical: spacing.sm,
-          opacity: pressed ? 0.7 : 1,
-        },
-      ]}>
+      style={({ pressed }) => ({
+        flexDirection: 'row',
+        alignItems: 'center',
+        width: '100%',
+        paddingVertical: spacing.sm,
+        opacity: pressed ? 0.7 : 1,
+      })}>
+      {/* GRID COLUMN 1: ICON */}
       <View
         style={{
           width: 40,
@@ -55,52 +57,81 @@ export function ExpenseRow({ expense }: { expense: Expense }) {
           backgroundColor: colors.surfaceStrong,
           alignItems: 'center',
           justifyContent: 'center',
+          flexShrink: 0,
+          marginRight: spacing.md,
         }}>
-        <Icon name={category.icon} size={18} color={colors.textMuted} />
+        <Icon
+          name={category.icon}
+          size={18}
+          color={colors.textMuted}
+        />
       </View>
 
+      {/* GRID COLUMNS 2 + 3 */}
       <View
         style={{
           flex: 1,
           minWidth: 0,
-          gap: 2,
+          flexDirection: 'row',
+          alignItems: 'center',
         }}>
-        <AppText variant="body" numberOfLines={1} ellipsizeMode="tail">
-          {expense.title}
-        </AppText>
-
+        {/* GRID COLUMN 2: TITLE + PAYMENT INFO */}
         <View
           style={{
-            flexDirection: 'row',
-            alignItems: 'center',
-            gap: spacing.xs,
+            flex: 1,
             minWidth: 0,
+            paddingRight: spacing.md,
           }}>
-          
+          <AppText
+            variant="body"
+            numberOfLines={1}
+            ellipsizeMode="tail"
+            style={{
+              fontWeight: '600',
+            }}>
+            {expense.title}
+          </AppText>
+
           <AppText
             variant="caption"
             tone="muted"
             numberOfLines={1}
             ellipsizeMode="tail"
-            style={{ flex: 1 }}>
+            style={{
+              marginTop: 3,
+            }}>
             {payer.name} paid · {splitLabel(expense)}
           </AppText>
         </View>
-      </View>
 
-      <View
-        style={{
-          alignItems: 'flex-end',
-          gap: 2,
-          flexShrink: 0,
-        }}>
-        <AppText variant="body" numberOfLines={1}>
-          {formatCurrency(expense.amount)}
-        </AppText>
+        {/* GRID COLUMN 3: AMOUNT + TIME */}
+        <View
+          style={{
+            width: 82,
+            flexShrink: 0,
+            alignItems: 'flex-end',
+          }}>
+          <AppText
+            variant="body"
+            numberOfLines={1}
+            style={{
+              fontWeight: '700',
+              textAlign: 'right',
+            }}>
+            {formatCurrency(expense.amount)}
+          </AppText>
 
-        <AppText variant="caption" tone="muted" numberOfLines={1}>
-          {formatTime(expense.dateTime)}
-        </AppText>
+          <AppText
+            variant="caption"
+            tone="muted"
+            numberOfLines={1}
+            style={{
+              marginTop: 3,
+              textAlign: 'right',
+            }}>
+            {formatTime(expense.dateTime)}
+          </AppText>
+        </View>
       </View>
     </Pressable>
   );
