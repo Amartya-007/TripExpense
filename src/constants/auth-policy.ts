@@ -3,7 +3,7 @@ const HOURS_IN_SECONDS = 60 * MINUTES_IN_SECONDS;
 const DAY_IN_SECONDS = 24 * HOURS_IN_SECONDS;
 
 export const authPolicy = {
-  minimumPasswordLength: 15,
+  minimumPasswordLength: 8,
   maximumPasswordLength: 128,
   sensitiveActionFreshnessSeconds: 15 * MINUTES_IN_SECONDS,
 
