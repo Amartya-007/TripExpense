@@ -36,6 +36,13 @@
       "when": 1789047038998,
       "tag": "0004_handy_dazzler",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1789822105623,
+      "tag": "0005_flashy_rick_jones",
+      "breakpoints": true
     }
   ]
 }

@@ -44,6 +44,12 @@ const serverEnvSchema = z
     EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID: googleClientIdSchema,
     EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID: googleClientIdSchema,
     GOOGLE_CLIENT_SECRET: z.string().min(1, 'GOOGLE_CLIENT_SECRET cannot be empty').optional(),
+    S3_BUCKET: z.string().min(1, 'S3_BUCKET cannot be empty').optional(),
+    S3_REGION: z.string().min(1, 'S3_REGION cannot be empty').optional(),
+    AWS_ACCESS_KEY_ID: z.string().min(1, 'AWS_ACCESS_KEY_ID cannot be empty').optional(),
+    AWS_SECRET_ACCESS_KEY: z.string().min(1, 'AWS_SECRET_ACCESS_KEY cannot be empty').optional(),
+    /** Only needed for an S3-compatible provider other than AWS itself (e.g. Cloudflare R2, MinIO). Leave unset to use AWS's default endpoint for S3_REGION. */
+    AWS_ENDPOINT_URL_S3: z.url('AWS_ENDPOINT_URL_S3 must be a valid URL').optional(),
   })
   .superRefine((value, context) => {
     if (value.SMS_PROVIDER === 'vendel' && (!value.VENDEL_API_KEY || value.VENDEL_API_KEY.trim().length === 0)) {
@@ -67,6 +73,17 @@ const serverEnvSchema = z
         code: 'custom',
         path: ['GOOGLE_CLIENT_SECRET'],
         message: 'Google Sign-In requires the Web, iOS, and Android client IDs plus the Web client secret',
+      });
+    }
+
+    const s3Values = [value.S3_BUCKET, value.S3_REGION, value.AWS_ACCESS_KEY_ID, value.AWS_SECRET_ACCESS_KEY];
+    const configuredS3Values = s3Values.filter(Boolean).length;
+
+    if (configuredS3Values > 0 && configuredS3Values < s3Values.length) {
+      context.addIssue({
+        code: 'custom',
+        path: ['S3_BUCKET'],
+        message: 'Receipt/avatar uploads require S3_BUCKET, S3_REGION, AWS_ACCESS_KEY_ID, and AWS_SECRET_ACCESS_KEY together',
       });
     }
 
